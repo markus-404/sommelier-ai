@@ -1,0 +1,110 @@
+openapi: 3.1.0
+info:
+  title: Nha Chat E-commerce Tools
+  description: Công cụ hỗ trợ AI Sommelier tìm kiếm sản phẩm và tạo đơn hàng từ website Nhà Chát.
+  version: 1.0.0
+servers:
+  - url: https://api.nhachat.com/v1 # Đổi URL này thành API thật của website bạn
+paths:
+  /wines/search:
+    get:
+      operationId: search_nhachat_wines
+      summary: Tìm kiếm rượu vang trên website
+      description: Tìm kiếm các dòng vang dựa trên từ khóa, giá tiền, phong cách, hoặc loại nho.
+      parameters:
+        - name: query
+          in: query
+          description: Từ khóa tìm kiếm (VD: Cabernet Sauvignon, vang Pháp, vang đỏ...)
+          required: false
+          schema:
+            type: string
+        - name: min_price
+          in: query
+          description: Ngân sách tối thiểu (VND)
+          required: false
+          schema:
+            type: integer
+        - name: max_price
+          in: query
+          description: Ngân sách tối đa (VND)
+          required: false
+          schema:
+            type: integer
+        - name: pairing_food
+          in: query
+          description: Món ăn ăn kèm để match (VD: bò bít tết, hải sản, salad)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Danh sách sản phẩm phù hợp
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Mã sản phẩm (Dùng để tạo đơn hàng)
+                    name:
+                      type: string
+                      description: Tên chai vang
+                    price_vnd:
+                      type: integer
+                      description: Giá bán bằng VNĐ
+                    tasting_notes:
+                      type: string
+                      description: Ghi chú hương vị
+                    url:
+                      type: string
+                      description: Link xem chi tiết
+  /checkout/create:
+    post:
+      operationId: create_nhachat_checkout
+      summary: Tạo link thanh toán đơn hàng
+      description: Tạo giỏ hàng và link thanh toán nhanh cho khách hàng dựa trên sản phẩm đã chọn.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - quantity
+                    properties:
+                      product_id:
+                        type: string
+                        description: Mã sản phẩm lấy từ hàm search
+                      quantity:
+                        type: integer
+                        description: Số lượng (mặc định là 1)
+                vat_required:
+                  type: boolean
+                  description: Khách có yêu cầu xuất VAT không
+                customer_notes:
+                  type: string
+                  description: Ghi chú thêm của khách
+      responses:
+        '200':
+          description: Trả về link thanh toán (checkout_url)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checkout_url:
+                    type: string
+                    description: Đường dẫn thanh toán gửi cho khách
+                  order_id:
+                    type: string

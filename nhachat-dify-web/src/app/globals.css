@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-red: #802a3c;
+  --color-brand-red-light: #a63d52;
+  --color-brand-gold: #c5a059;
+  --color-brand-cream: #fdfaf6;
+  --color-brand-cream-sidebar: #f8f3eb;
+  --color-brand-text: #2d2d2d;
+  --color-brand-text-muted: #6b6b6b;
+  --color-brand-border: #e5e0d8;
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+}
+
+@layer base {
+  body {
+    @apply bg-brand-cream text-brand-text font-sans antialiased;
+  }
+  h1, h2, h3, h4, .font-serif {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  .wine-gradient {
+    background: linear-gradient(135deg, var(--color-brand-red) 0%, #4a0e1c 100%);
+  }
+  .wine-card-shadow {
+    box-shadow: 0 4px 20px rgba(128, 42, 60, 0.08);
+  }
+}
+
+/* Custom scrollbar for chat area */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
