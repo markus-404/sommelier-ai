@@ -38,12 +38,12 @@ export default function MessageInput({ onSendMessage, disabled }: MessageInputPr
   }, [text]);
 
   return (
-    <div className="w-full flex flex-col gap-2">
-      <div className={`relative flex items-end bg-white border-2 ${disabled ? 'border-brand-border opacity-70' : 'border-brand-border focus-within:border-brand-gold'} rounded-[2rem] shadow-2xl overflow-hidden transition-all duration-300 px-2 py-2`}>
+    <div className="w-full flex flex-col gap-3 group">
+      <div className={`relative flex items-end bg-white/80 backdrop-blur-xl border-2 ${disabled ? 'border-brand-border opacity-70' : 'border-brand-border/60 focus-within:border-brand-gold focus-within:shadow-2xl focus-within:shadow-brand-gold/10'} rounded-[2.5rem] shadow-xl overflow-hidden transition-all duration-500 px-3 py-2.5`}>
         {/* Attachment Button */}
         <button 
           title="Tải ảnh lên (Sắp ra mắt)"
-          className="p-3 text-brand-text-muted hover:text-brand-red transition-colors disabled:opacity-50 flex-shrink-0"
+          className="p-3 text-brand-text-muted hover:text-brand-red transition-all duration-300 disabled:opacity-50 flex-shrink-0 hover:bg-brand-cream rounded-full"
           type="button"
           disabled={disabled}
         >
@@ -56,8 +56,8 @@ export default function MessageInput({ onSendMessage, disabled }: MessageInputPr
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Hỏi Nhà Chát về rượu vang..."
-          className="w-full max-h-48 min-h-[44px] py-3 px-3 bg-transparent resize-none outline-none text-brand-text font-medium placeholder-[#a39485] leading-relaxed"
+          placeholder="Hãy để Sommelier dẫn lối quý khách..."
+          className="w-full max-h-48 min-h-[44px] py-3 px-3 bg-transparent resize-none outline-none text-brand-text font-medium placeholder-[#a39485]/60 leading-relaxed text-[15px]"
           rows={1}
           disabled={disabled}
         />
@@ -66,20 +66,24 @@ export default function MessageInput({ onSendMessage, disabled }: MessageInputPr
         <button
           onClick={handleSend}
           disabled={disabled || !text.trim()}
-          className={`p-3 m-1 rounded-full transition-all duration-300 transform active:scale-95 flex-shrink-0 ${
+          className={`p-3.5 rounded-full transition-all duration-500 transform active:scale-90 flex-shrink-0 shadow-sm ${
             text.trim() && !disabled 
-              ? "wine-gradient text-white shadow-lg hover:shadow-brand-red/20" 
-              : "bg-brand-cream text-brand-text-muted cursor-not-allowed"
+              ? "wine-gradient text-white shadow-lg shadow-brand-red/20 hover:shadow-brand-red/40 hover:-translate-y-0.5" 
+              : "bg-brand-cream text-brand-text-muted cursor-not-allowed opacity-40"
           }`}
           title="Gửi tin nhắn"
         >
-          <Send size={20} className={text.trim() && !disabled ? "animate-in slide-in-from-left-1" : ""} />
+          <Send size={18} fill={text.trim() && !disabled ? "currentColor" : "none"} className={text.trim() && !disabled ? "animate-in zoom-in-50" : ""} />
         </button>
       </div>
 
-      <p className="text-center text-[11px] font-medium text-brand-text-muted tracking-wide uppercase opacity-60">
-        Taste the Excellence • <span className="text-brand-red">Nha Chat Sommelier</span>
-      </p>
+      <div className="flex justify-center items-center gap-3 opacity-40 group-focus-within:opacity-80 transition-opacity duration-700">
+        <div className="h-[1px] w-8 bg-brand-gold"></div>
+        <p className="text-center text-[10px] font-bold text-brand-text-muted tracking-[0.2em] uppercase">
+          Art of Wine • <span className="text-brand-red">Nha Chat Sommelier</span>
+        </p>
+        <div className="h-[1px] w-8 bg-brand-gold"></div>
+      </div>
     </div>
   );
 }

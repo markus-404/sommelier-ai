@@ -3,7 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import MessageInput from "./MessageInput";
-import { Sparkles, Wine, Search, Gift, User } from "lucide-react";
+import { Sparkles, Wine, Search, Gift, User, Wand2 } from "lucide-react";
+import WineCard, { WineProduct } from "./WineCard";
+import SuggestedQuestions from "./SuggestedQuestions";
+import { ProfileWizard } from "./ProfileWizard";
+import { PairingWizard } from "./PairingWizard";
+import { FeedbackCollector } from "./FeedbackCollector";
+import { Message } from "@/types/chat";
+import { ChatSession } from "@/app/page";
 
 const SHORTCUTS = [
   { icon: Wine, title: "Khám phá Vang", desc: "Theo quốc gia, giống nho" },
@@ -12,11 +19,52 @@ const SHORTCUTS = [
   { icon: Sparkles, title: "Kết hợp Món ăn", desc: "Bò bít tết, hải sản" },
 ];
 
-export default function ChatArea({ apiKey }: { apiKey: string }) {
-  const [messages, setMessages] = useState<{ id: string; role: "user" | "assistant"; content: string }[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState<string>("");
+interface ChatAreaProps {
+  currentSession: ChatSession | null;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  userProfile: any;
+  setUserProfile: (profile: any) => void;
+  onCreateSession: (firstMsg: string, messages: Message[], conversationId: string) => string;
+  onUpdateSession: (sessionId: string, updates: Partial<ChatSession>) => void;
+}
+
+export default function ChatArea({ 
+  currentSession,
+  isLoading,
+  setIsLoading,
+  userProfile,
+  setUserProfile,
+  onCreateSession,
+  onUpdateSession
+}: ChatAreaProps) {
+  const [showProfileWizard, setShowProfileWizard] = useState(false);
+  const [showPairingWizard, setShowPairingWizard] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const messages = currentSession?.messages || [];
+  const conversationId = currentSession?.conversationId || "";
+
+  // Show profile wizard for new users
+  useEffect(() => {
+    if (!userProfile) {
+      const timer = setTimeout(() => setShowProfileWizard(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [userProfile]);
+
+  const handleProfileComplete = (profile: any) => {
+    if (!profile) {
+      setShowProfileWizard(false);
+      return;
+    }
+    setUserProfile(profile);
+    localStorage.setItem("nhat-chat-user-profile", JSON.stringify(profile));
+    setShowProfileWizard(false);
+    
+    // Auto send a welcome message based on profile
+    handleSendMessage(`Chào Sommelier, tôi thường dùng vang cho dịp ${profile.occasion}. Tôi thích vang ${profile.intensity} và ${profile.sweetness}. Hãy gợi ý cho tôi 1 chai vang phù hợp nhấté!`);
+  };
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -25,15 +73,57 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
     }
   }, [messages, isLoading]);
 
+  const parseAssistantResponse = (text: string) => {
+    const productCards: WineProduct[] = [];
+    const suggestedQuestions: string[] = [];
+    let cleanContent = text;
+
+    // Extract product cards
+    const productRegex = /<product_card>([\s\S]*?)<\/product_card>/g;
+    let match;
+    while ((match = productRegex.exec(text)) !== null) {
+      try {
+        const product = JSON.parse(match[1]);
+        productCards.push(product);
+      } catch (e) {
+        // Silently handle partial JSON during streaming
+      }
+    }
+    cleanContent = cleanContent.replace(productRegex, "");
+
+    // Extract suggested questions
+    const questionsRegex = /<suggested_questions>([\s\S]*?)<\/suggested_questions>/g;
+    while ((match = questionsRegex.exec(text)) !== null) {
+      try {
+        const questions = JSON.parse(match[1]);
+        if (Array.isArray(questions)) {
+          suggestedQuestions.push(...questions);
+        }
+      } catch (e) {
+        // Silently handle partial JSON
+      }
+    }
+    cleanContent = cleanContent.replace(questionsRegex, "");
+
+    return { cleanContent, productCards, suggestedQuestions };
+  };
+
   const handleSendMessage = async (text: string) => {
     const userMsgId = Date.now().toString();
     const assistantMsgId = (Date.now() + 1).toString();
     
-    // 1. Add User Message
-    setMessages((prev) => [...prev, { id: userMsgId, role: "user", content: text }]);
+    const userMsg: Message = { id: userMsgId, role: "user", content: text };
+    const initialAssistantMsg: Message = { id: assistantMsgId, role: "assistant", content: "" };
     
-    // 2. Prepare Assistant Message Placeholder
-    setMessages((prev) => [...prev, { id: assistantMsgId, role: "assistant", content: "" }]);
+    let activeMessages = [...messages, userMsg, initialAssistantMsg];
+    let activeSessionId = currentSession?.id;
+
+    // If it's a new chat, create a session first
+    if (!activeSessionId) {
+      activeSessionId = onCreateSession(text, activeMessages, conversationId);
+    } else {
+      onUpdateSession(activeSessionId, { messages: activeMessages });
+    }
     
     setIsLoading(true);
 
@@ -45,7 +135,11 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
           message: text,
           conversationId: conversationId,
           user: "webapp-user",
-          apiKey: apiKey
+          inputs: userProfile ? {
+            user_intensity: userProfile.intensity,
+            user_sweetness: userProfile.sweetness,
+            user_occasion: userProfile.occasion
+          } : {}
         }),
       });
 
@@ -54,10 +148,10 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
         throw new Error(errorData.error || "Có lỗi xảy ra khi kết nối máy chủ.");
       }
 
-      // 3. Handle Streaming Response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantContent = "";
+      let buffer = "";
 
       if (reader) {
         while (true) {
@@ -65,9 +159,11 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
           
-          // Dify returns multiple events in one chunk separated by newlines
-          const lines = chunk.split("\n");
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          
           for (const line of lines) {
             if (line.startsWith("data: ")) {
               try {
@@ -75,43 +171,63 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
                 
                 if (data.event === "message") {
                   assistantContent += data.answer;
-                  // Update message content in real-time
-                  setMessages((prev) => 
-                    prev.map((msg) => 
-                      msg.id === assistantMsgId ? { ...msg, content: assistantContent } : msg
-                    )
+                  const { cleanContent, productCards, suggestedQuestions } = parseAssistantResponse(assistantContent);
+                  
+                  activeMessages = activeMessages.map((msg) => 
+                    msg.id === assistantMsgId ? { 
+                      ...msg, 
+                      content: cleanContent,
+                      productCards: productCards.length > 0 ? productCards : undefined,
+                      suggestedQuestions: suggestedQuestions.length > 0 ? suggestedQuestions : undefined
+                    } : msg
                   );
+
+                  onUpdateSession(activeSessionId, { 
+                    messages: activeMessages,
+                    conversationId: data.conversation_id || conversationId
+                  });
                 }
-                
-                if (data.conversation_id && !conversationId) {
-                  setConversationId(data.conversation_id);
-                }
-              } catch (e) {
-                // Ignore incomplete JSON or other events
-              }
+              } catch (e) { /* Ignore incomplete JSON */ }
             }
           }
         }
       }
     } catch (error: any) {
-      setMessages((prev) => 
-        prev.map((msg) => 
+      onUpdateSession(activeSessionId, {
+        messages: activeMessages.map((msg) => 
           msg.id === assistantMsgId 
             ? { ...msg, content: `Xin lỗi, đã có lỗi xảy ra: ${error.message}` } 
             : msg
         )
-      );
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleShortcutClick = (title: string) => {
-    handleSendMessage(`Tư vấn cho tôi: ${title}`);
+    if (title === "Kết hợp Món ăn") {
+        setShowPairingWizard(true);
+    } else {
+        handleSendMessage(`Tư vấn cho tôi: ${title}`);
+    }
+  };
+
+  const handleFeedback = (msgId: string, rating: string, tags?: string[]) => {
+    console.log(`Feedback for ${msgId}: ${rating}`, tags);
   };
 
   return (
     <div className="flex-1 flex flex-col h-full bg-brand-cream relative">
+      {/* Wizards */}
+      {showProfileWizard && <ProfileWizard onComplete={handleProfileComplete} />}
+      {showPairingWizard && (
+        <PairingWizard 
+            onPair={(food) => { setShowPairingWizard(false); handleSendMessage(food); }} 
+            onClose={() => setShowPairingWizard(false)} 
+        />
+      )}
+
       {/* Top Header Placeholder / Blur */}
       <div className="absolute top-0 left-0 right-0 h-16 bg-brand-cream/60 backdrop-blur-md z-10 border-b border-brand-border md:hidden flex items-center px-4">
         <h2 className="font-serif font-bold text-brand-red">Nhà Chát Sommelier</h2>
@@ -123,7 +239,6 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
       >
         <div className="max-w-4xl mx-auto w-full flex flex-col gap-8">
           {messages.length === 0 ? (
-            // Empty State (Refined)
             <div className="flex flex-col items-center justify-center py-20 animate-in fade-in slide-in-from-bottom-5 duration-1000">
               <div className="w-20 h-20 bg-brand-red rounded-3xl flex items-center justify-center mb-8 shadow-2xl rotate-3">
                 <Wine size={40} className="text-white" />
@@ -135,41 +250,43 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
                 <p className="text-brand-text-muted text-lg max-w-lg mx-auto font-light leading-relaxed">
                   Chào mừng bạn đến với <span className="text-brand-red font-semibold">Nhà Chát</span>. Tôi là Sommelier riêng của bạn, sẵn sàng kiến tạo trải nghiệm rượu vang hoàn hảo nhất.
                 </p>
+                {userProfile && (
+                  <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-medium">
+                    <User size={12} />
+                    Đang áp dụng Gu cá nhân: {userProfile.prefer}
+                  </div>
+                )}
               </div>
 
-              {/* Shortcuts Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl">
                 {SHORTCUTS.map((item, index) => (
                   <button 
                     key={index} 
                     onClick={() => handleShortcutClick(item.title)}
-                    className="group flex flex-col items-center justify-center p-6 bg-white/70 hover:bg-white border border-brand-border rounded-2xl transition-all duration-300 hover:-translate-y-2 wine-card-shadow active:scale-95"
+                    className="group flex flex-col items-center justify-center p-5 bg-white/40 backdrop-blur-md hover:bg-white border border-white/60 hover:border-brand-gold rounded-[2rem] transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-gold/10 active:scale-95"
                   >
-                    <div className="p-3 bg-brand-cream rounded-xl mb-4 group-hover:bg-brand-red group-hover:text-white transition-colors duration-300">
-                      <item.icon size={28} />
+                    <div className="p-4 bg-white rounded-2xl mb-4 group-hover:bg-brand-red group-hover:text-white transition-all duration-500 shadow-sm group-hover:shadow-lg group-hover:shadow-brand-red/20">
+                      <item.icon size={24} className="group-hover:scale-110 transition-transform duration-500" />
                     </div>
-                    <span className="font-bold text-[#3d2c23] text-sm mb-1">{item.title}</span>
-                    <span className="text-xs text-brand-text-muted text-center leading-snug">{item.desc}</span>
+                    <span className="font-serif font-bold text-[#3d2c23] text-sm mb-1 tracking-tight">{item.title}</span>
+                    <span className="text-[10px] uppercase font-bold text-brand-gold/70 group-hover:text-brand-red transition-colors duration-500 tracking-widest">{item.desc}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            // Chat Feed (Premium)
             messages.map((msg, idx) => (
               <div 
                 key={msg.id} 
                 className={`flex w-full gap-4 md:gap-6 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"} animate-in fade-in slide-in-from-bottom-2 duration-500`}
                 style={{ animationDelay: `${idx * 0.1}s` }}
               >
-                {/* Avatar */}
                 <div className={`w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
                   msg.role === "user" ? "bg-brand-cream border border-brand-border" : "wine-gradient text-white"
                 }`}>
                   {msg.role === "user" ? <User size={20} className="text-brand-gold" /> : <Wine size={22} />}
                 </div>
                 
-                {/* Message Bubble */}
                 <div className={`flex flex-col gap-2 max-w-[85%] md:max-w-[75%]`}>
                   <div className={`rounded-3xl px-5 py-4 text-[15px] leading-relaxed wine-card-shadow ${
                     msg.role === "user" 
@@ -190,6 +307,26 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
                       <p className="whitespace-pre-wrap">{msg.content}</p>
                     )}
                   </div>
+                  
+                  {msg.role === "assistant" && (
+                    <div className="flex flex-col gap-2">
+                      <FeedbackCollector 
+                        messageId={msg.id} 
+                        onFeedback={(id, rating, tags) => handleFeedback(id, rating, tags)} 
+                      />
+                      {msg.productCards?.map((product, pIdx) => (
+                        <div key={pIdx} className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
+                          <WineCard product={product} />
+                        </div>
+                      ))}
+                      {msg.suggestedQuestions && (
+                        <SuggestedQuestions 
+                          questions={msg.suggestedQuestions} 
+                          onSelect={handleSendMessage} 
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))
@@ -210,8 +347,23 @@ export default function ChatArea({ apiKey }: { apiKey: string }) {
         </div>
       </div>
 
-      {/* Input Overlay at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-brand-cream via-brand-cream/90 to-transparent flex justify-center z-20">
+      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-brand-cream via-brand-cream/90 to-transparent flex flex-col items-center gap-4 z-20">
+        <div className="flex gap-2 mb-2">
+            <button 
+                onClick={() => setShowPairingWizard(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur border border-brand-border rounded-full text-xs font-serif font-bold text-brand-red hover:bg-white hover:border-brand-gold transition-all shadow-sm group"
+            >
+                <Wand2 className="w-3.5 h-3.5" />
+                Kết hợp món ăn
+            </button>
+            <button 
+                onClick={() => setShowProfileWizard(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur border border-brand-border rounded-full text-xs font-serif font-bold text-brand-gold hover:bg-white hover:border-brand-red transition-all shadow-sm group"
+            >
+                <User className="w-3.5 h-3.5" />
+                Thay đổi Gu
+            </button>
+        </div>
         <div className="w-full max-w-3xl">
           <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
         </div>

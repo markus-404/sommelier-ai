@@ -1,191 +1,112 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SOMMELIER_SYSTEM_PROMPT = `Bạn là Nha Chat Sommelier, một Chuyên gia Sommelier Riêng (Private Sommelier) tại Nhà Chát - Đơn vị cung cấp rượu vang nhập khẩu cao cấp (nha-chat.com).
+const SOMMELIER_SYSTEM_PROMPT = `Bạn là Chuyên gia rượu vang cá nhân (Sommelier) cao cấp từ hệ thống Nhà Chát (nha-chat.com). Nhiệm vụ của bạn là dẫn dắt người dùng qua một hành trình khám phá thế giới rượu vang đầy cảm hứng và sang trọng.
 
-PHONG CÁCH PHỤC VỤ:
-- Chuyên nghiệp, lịch lãm, nhưng gần gũi và không "giảng đạo". Sử dụng ngôn từ dễ hiểu, bình dân.
-- Luôn đặt tối đa 2 câu hỏi để hiểu nhu cầu (vị giác, món ăn, ngân sách, dịp sử dụng) trước khi gợi ý.
+VAI TRÒ & PHONG CÁCH:
+- Tên: Nhà Chát Sommelier.
+- Phong cách: Tinh tế, am hiểu sâu sắc nhưng không phô trương. Ngôn từ lịch thiệp, giàu hình ảnh ("hương thơm nồng nàn của trái cây chín", "hậu vị kéo dài một cách mượt mà").
+- Nguyên tắc: Không chỉ "bán rượu", mà là "tư vấn phong cách sống".
 
-QUY TRÌNH TƯ VẤN:
-1. LUÔN HỎI: Nếu thông tin khách hàng cung cấp chưa đủ, hãy hỏi thêm tối đa 2 câu hỏi ngắn gọn.
-2. GIÁO DỤC: Giải thích ngắn gọn về phong cách rượu vang phù hợp với món ăn/dịp đó bằng từ ngữ đơn giản.
-3. GỢI Ý (Tối đa 3 chai): Chỉ gợi ý các sản phẩm trong danh sách dưới đây. Sắp xếp theo thứ tự GIÁ TỪ CAO XUỐNG THẤP.
-   - Sử dụng đúng câu chuyển: "Nếu anh/chị muốn thử style [Tên style] này, Nhà Chát có vài chai rất đúng điệu:".
+QUY TẮC CỐT LÕI:
+1. CÁ NHÂN HÓA: Sử dụng thông tin từ 'inputs' (user_level, user_preference, user_budget) để điều chỉnh câu trả lời. Ví dụ: Nếu là 'Newbie', hãy giải thích thuật ngữ; nếu là 'Expert', hãy bàn sâu về terroir hoặc niên vụ.
+2. KẾT HỢP MÓN ĂN (PAIRING EXPERT): 
+   - Thịt đỏ (Bò, Cừu): Gợi ý Vang Đỏ đậm đà (Cabernet Sauvignon, Amarone).
+   - Hải sản/Thịt trắng: Gợi ý Vang Trắng thanh tao (Arneis) hoặc Vang Hồng.
+   - Đồ ngọt/Tráng miệng: Gợi ý Moscato D'Asti.
+   - Đồ ăn Việt Nam: Gợi ý các dòng vang có độ acid tốt để cân bằng gia vị.
+3. NGÂN SÁCH: Luôn tôn trọng ngân sách người dùng. Khẳng định ở mức 500k-1 triệu vẫn có những "viên ngọc quý".
+4. THƯƠNG HIỆU: Chỉ nhắc đến "Nhà Chát" khi giới thiệu sản phẩm cụ thể nhằm tăng uy tín.
 
-DANH SÁCH SẢN PHẨM KHẢ DỤNG TẠI NHÀ CHÁT:
-1. 1953 Dalva Colheita Port (White) - 15.500.000đ - https://www.nha-chat.com/products/dalva-colheita-port-white-1953
-2. 1963 Dalva Colheita Port (White) - 11.500.000đ - https://www.nha-chat.com/products/dalva-colheita-port-white-1963
-3. Zenato Amarone della Valpolicella Classico Riserva Sergio Zenato - 4.350.000đ - https://www.nha-chat.com/products/zenato-amarone-della-valpolicella-classico-riserva-sergio-zenato
-4. Dalva Colheita Port 1995 - 3.150.000đ - https://www.nha-chat.com/products/dalva-colheita-port-1995
-5. Zenato Amarone della Valpolicella Classico - 2.350.000đ - https://www.nha-chat.com/products/zenato-amarone-della-valpolicella-classico
-6. Dalva Colheita Port 2007 - 2.150.000đ - https://www.nha-chat.com/products/dalva-colheita-port-2007
-7. Zenato Ripassa della Valpolicella Superiore - 1.250.000đ - https://www.nha-chat.com/products/zenato-ripassa-della-valpolicella-superiore
-8. Champagne Baron-Fuenté Tradition Brut - 1.250.000đ - https://www.nha-chat.com/products/champagne-baron-fuente-tradition-brut
-9. Dalva 20 Years Old Tawny Port - 1.250.000đ - https://www.nha-chat.com/products/dalva-20-years-old-tawny-port
-10. Zenato Valpolicella Superiore - 850.000đ - https://www.nha-chat.com/products/zenato-valpolicella-superiore
-11. Menicucci "1686" Rosso Toscana IGT - 850.000đ - https://www.nha-chat.com/products/menicucci-1686-rosso-toscana-igt
-12. Dalva 10 Years Old Tawny Port - 790.000đ - https://www.nha-chat.com/products/dalva-10-years-old-tawny-port
-13. Menicucci "Gocce" Primitivo del Salento IGT - 790.000đ - https://www.nha-chat.com/products/menicucci-gocce-primitivo-del-salento-igt
-14. Zenato Bardolino - 510.000đ - https://www.nha-chat.com/products/zenato-bardolino
-15. Valdivieso Gran Reserva Cabernet Sauvignon - 490.000đ - https://www.nha-chat.com/products/valdivieso-gran-reserva-cabernet-sauvignon
-16. Valdivieso Gran Reserva Merlot - 490.000đ - https://www.nha-chat.com/products/valdivieso-gran-reserva-merlot
-17. Valdivieso Gran Reserva Carmenere - 490.000đ - https://www.nha-chat.com/products/valdivieso-gran-reserva-carmenere
-18. Menicucci "Gocce" Sangiovese Toscana IGT - 490.000đ - https://www.nha-chat.com/products/menicucci-gocce-sangiovese-toscana-igt
-19. Pirovano "Collezione del Re" Primitivo Puglia IGT - 450.000đ - https://www.nha-chat.com/products/pirovano-collezione-del-re-primitivo-puglia-igt
-20. Pirovano "Collezione del Re" Sangiovese Puglia IGT - 350.000đ - https://www.nha-chat.com/products/pirovano-collezione-del-re-sangiovese-puglia-igt
-21. Dalva Tawny/Ruby/White Port - 350.000đ - https://www.nha-chat.com/products/dalva-port-tawny-ruby-white
-22. Pirovano "Collezione del Re" Montepulciano d'Abruzzo DOC - 350.000đ - https://www.nha-chat.com/products/pirovano-collezione-del-re-montepulciano-dabruzzo-doc
-23. Valdivieso Winemaker Reserve Cabernet Sauvignon - 350.000đ - https://www.nha-chat.com/products/valdivieso-winemaker-reserve-cabernet-sauvignon
-24. Valdivieso Winemaker Reserve Merlot - 350.000đ - https://www.nha-chat.com/products/valdivieso-winemaker-reserve-merlot
+DANH MỤC SẢN PHẨM NHÀ CHÁT:
+- [Kinh tế] Parajex Reservado Cabernet Sauvignon - 250,000₫ (Chile). Đậm đà, mận chín, vanilla. https://www.nha-chat.com/products/ruou-vang-do-chile-parajex-reservado-cabernet-sauvignon
+- [Phổ thông] Barbera D'asti Superiore D.O.C.G - 590,000₫ (Ý). Hương hoa violet, anh đào, acid cân bằng. https://www.nha-chat.com/products/ruou-vang-do-y-barbera-dasti-d-o-c-g-superiore
+- [Vang Trắng] Terre Alfieri Arneis D.O.C.G - 590,000₫ (Ý). Thanh mát, táo xanh, hạnh nhân. https://www.nha-chat.com/products/ruou-vang-y-trang-terre-alfieri-arneis-d-o-c-g
+- [Sủi Ngọt] Moscato D' Asti D.O.C.G Fiore Di Loto - 590,000₫ (Ý). Ngọt ngào, bọt mịn, hương hoa cơm cháy. https://www.nha-chat.com/products/ruou-vang-sui-trang-y-moscato-d-asti-d-o-c-g-fiore-di-loto
+- [Cao cấp] Barolo D.O.C.G (Fratelli Ponte) - 1,450,000₫ (Ý). "Vị vua của các loại vang", mạnh mẽ, gỗ sồi, thuốc lá. https://www.nha-chat.com/products/ruou-vang-do-y-moscato-barolo-d-o-c-g
+- [Đặc biệt] Albino Armani Amarone D.O.C.G - 1,850,000₫ (Ý). Nồng độ cao, làm từ nho khô, hương socola đen và gia vị. https://www.nha-chat.com/products/ruou-vang-do-y-albino-armani-amarone-d-o-c-g
 
-CHỈ GIỚI THIỆU SẢN PHẨM CÓ TRONG DANH SÁCH TRÊN. LUÔN CUNG CẤP LINK TRỰC TIẾP.`;
+ĐỊNH DẠNG PHẢN HỒI:
+- Bắt đầu bằng 1 nhận xét tinh tế về lựa chọn/câu hỏi của khách.
+- Cấu trúc: [Tư vấn] -> [Gợi ý sản phẩm kèm <product_card> JSON] -> [Lời khuyên thưởng thức (nhiệt độ, ly v.v.)].
+- Kết thúc bằng <suggested_questions> (3 câu) để duy trì hội thoại.
+- Giữ câu trả lời ngắn gọn, xuống dòng rõ ràng.`;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { message, conversationId, user, apiKey: clientApiKey } = body;
+    const { message, query, inputs, user, conversationId } = await req.json();
+    const chatMessage = message || query;
 
-    if (!message) {
+    if (!chatMessage) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    // Use the API key from environment variables
-    const apiKey = process.env.DIFY_API_KEY;
+    // Luôn ưu tiên API Key từ biến môi trường để "fix cứng" theo yêu cầu người dùng
+    const apiKey = process.env.DIFY_API_KEY || process.env.NEXT_PUBLIC_DIFY_API_KEY;
     
     if (!apiKey) {
-      console.error("DIFY_API_KEY is not defined in environment variables");
-      return NextResponse.json(
-        { error: "API Key is missing. Please configure DIFY_API_KEY in environment variables." },
-        { status: 401 }
-      );
+      console.error("Critical: API Key is missing in environment variables.");
+      return NextResponse.json({ error: "Hệ thống đang bảo trì. Vui lòng thử lại sau." }, { status: 500 });
     }
-    console.log("Using API Key starting with:", apiKey?.substring(0, 10));
 
     const apiUrl = process.env.DIFY_API_URL || "https://api.dify.ai/v1";
 
-    // Check if it's a Google Gemini API Key
+    // Xử lý Google Gemini nếu key bắt đầu bằng AIzaSy
     if (apiKey.startsWith("AIzaSy")) {
-      console.log("Gemini Key detected, using Gemini SDK...");
-      const { GoogleGenerativeAI } = await import("@google/generative-ai");
-      const genAI = new GoogleGenerativeAI(apiKey);
-      
-      // Try models available for this API key
-      const modelsToTry = ["gemini-2.0-flash", "gemini-flash-latest", "gemini-3-flash-preview", "gemini-2.0-flash-exp"];
-      let result;
-      let lastError;
+       const { GoogleGenerativeAI } = await import("@google/generative-ai");
+       const genAI = new GoogleGenerativeAI(apiKey);
+       
+       try {
+         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", systemInstruction: SOMMELIER_SYSTEM_PROMPT });
+         const result = await model.generateContentStream(chatMessage);
 
-      for (const modelName of modelsToTry) {
-        try {
-          console.log(`Attempting Gemini with model: ${modelName}`);
-          const model = genAI.getGenerativeModel({ 
-            model: modelName, 
-            systemInstruction: SOMMELIER_SYSTEM_PROMPT 
-          });
-          result = await model.generateContentStream(message);
-          console.log(`Successfully started Gemini stream with ${modelName}`);
-          break;
-        } catch (err) {
-          lastError = err;
-          console.warn(`Gemini model ${modelName} failed:`, err instanceof Error ? err.message : String(err));
-        }
-      }
+         const stream = new ReadableStream({
+           async start(controller) {
+             const encoder = new TextEncoder();
+             try {
+               for await (const chunk of result.stream) {
+                 const text = chunk.text();
+                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "message", answer: text, conversation_id: conversationId || "gemini" })}\n\n`));
+               }
+             } catch (e: any) {
+               console.error("Gemini stream error:", e);
+               // Gửi lỗi cụ thể về client để người dùng biết (như lỗi Quota 429)
+               const errorMsg = e.message || "Đã có lỗi xảy ra trong quá trình xử lý.";
+               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "error", message: `[Lỗi hệ thống]: ${errorMsg}` })}\n\n`));
+             } finally {
+               controller.close();
+             }
+           }
+         });
 
-      if (!result) {
-        throw lastError || new Error("All Gemini models failed to initialize.");
-      }
-
-      const stream = new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of result.stream) {
-              const text = chunk.text();
-              const eventData = {
-                event: "message",
-                answer: text,
-                conversation_id: conversationId || "gemini-session",
-              };
-              controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(eventData)}\n\n`));
-            }
-          } catch (error) {
-            console.error("Gemini Streaming Error:", error);
-            controller.error(error);
-          } finally {
-            controller.close();
-          }
-        },
-      });
-
-      return new Response(stream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-        },
-      });
+         return new Response(stream, { headers: { "Content-Type": "text/event-stream" } });
+       } catch (error: any) {
+         console.error("Gemini Init Error:", error);
+         return NextResponse.json({ error: `[Gemini Error]: ${error.message}` }, { status: 500 });
+       }
     }
 
-    // Standard Dify Streaming Proxy
+    // Xử lý Dify
     const response = await fetch(`${apiUrl}/chat-messages`, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        inputs: {},
-        query: message,
-        response_mode: "streaming", // Enable streaming
-        conversation_id: conversationId || "",
-        user: user || "nha-chat-user",
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        inputs: inputs || {}, 
+        query: chatMessage, 
+        response_mode: "streaming", 
+        conversation_id: conversationId || "", 
+        user: user || "user" 
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return NextResponse.json(
-        { error: errorData.message || "Failed to fetch from Dify API" },
-        { status: response.status }
-      );
+        const errorData = await response.json().catch(() => ({}));
+        return NextResponse.json({ error: errorData.message || "Dify API Error" }, { status: response.status });
     }
 
-    // Set up ReadableStream to proxy Dify events to frontend
-    const stream = new ReadableStream({
-      async start(controller) {
-        const reader = response.body?.getReader();
-        if (!reader) {
-          controller.close();
-          return;
-        }
-
-        const decoder = new TextDecoder();
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            controller.enqueue(new TextEncoder().encode(chunk));
-          }
-        } catch (error) {
-          controller.error(error);
-        } finally {
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      },
-    });
-  } catch (error) {
+    return new Response(response.body, { headers: { "Content-Type": "text/event-stream" } });
+  } catch (error: any) {
     console.error("API Route Error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    const errorMessage = error.message || "Internal Server Error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
