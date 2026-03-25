@@ -1,11 +1,16 @@
 import { Plus, Wine, Info, Key, MessageSquare, History } from "lucide-react";
 
+import { ChatSession } from "@/app/page";
+
 interface SidebarProps {
+  sessions?: ChatSession[];
+  currentSessionId?: string | null;
   onNewChat?: () => void;
+  onSwitchSession?: (sessionId: string) => void;
   onSelectQuestion?: (question: string) => void;
 }
 
-export default function Sidebar({ onNewChat, onSelectQuestion }: SidebarProps) {
+export default function Sidebar({ sessions, currentSessionId, onNewChat, onSwitchSession, onSelectQuestion }: SidebarProps) {
   return (
     <div className="flex flex-col h-full bg-brand-cream-sidebar border-r border-brand-border px-4 py-8">
       {/* Brand Identity */}
@@ -45,18 +50,23 @@ export default function Sidebar({ onNewChat, onSelectQuestion }: SidebarProps) {
         </div>
         
         <div className="flex flex-col gap-3">
-          <button 
-            className="group flex items-center gap-3 text-left py-3.5 px-4 rounded-2xl hover:bg-white/80 text-brand-text text-[13px] font-medium transition-all border border-transparent hover:border-brand-border wine-card-shadow overflow-hidden"
-            onClick={() => onSelectQuestion?.("Gợi ý cho tôi một chai vang đỏ phù hợp để dùng kèm bít tết (Steak)?")}
-          >
-            <MessageSquare size={16} className="text-brand-red opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-            <span className="truncate group-hover:-translate-x-1 transition-transform">Gợi ý vang đỏ cho Steak</span>
-          </button>
-          
-          <div className="mt-8 flex flex-col items-center justify-center p-6 border-2 border-dashed border-brand-border rounded-3xl opacity-40">
-            <Wine size={24} className="mb-2 text-brand-gold" />
-            <span className="text-[10px] text-center font-medium">Bắt đầu trò chuyện để lưu lịch sử</span>
-          </div>
+          {(!sessions || sessions.length === 0) ? (
+            <div className="mt-8 flex flex-col items-center justify-center p-6 border-2 border-dashed border-brand-border rounded-3xl opacity-40">
+              <Wine size={24} className="mb-2 text-brand-gold" />
+              <span className="text-[10px] text-center font-medium">Bắt đầu trò chuyện để lưu lịch sử</span>
+            </div>
+          ) : (
+            sessions.map((session) => (
+              <button 
+                key={session.id}
+                className={`group flex items-center gap-3 text-left py-3.5 px-4 rounded-2xl text-[13px] font-medium transition-all border overflow-hidden ${currentSessionId === session.id ? 'bg-white text-brand-red border-brand-gold wine-card-shadow' : 'hover:bg-white/80 text-brand-text border-transparent hover:border-brand-border'}`}
+                onClick={() => onSwitchSession?.(session.id)}
+              >
+                <History size={16} className={`${currentSessionId === session.id ? 'text-brand-red' : 'opacity-30 group-hover:opacity-100'} transition-opacity flex-shrink-0`} />
+                <span className="truncate flex-1">{session.title}</span>
+              </button>
+            ))
+          )}
         </div>
       </nav>
 

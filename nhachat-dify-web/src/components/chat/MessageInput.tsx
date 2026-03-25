@@ -39,17 +39,7 @@ export default function MessageInput({ onSendMessage, disabled }: MessageInputPr
 
   return (
     <div className="w-full flex flex-col gap-3 group">
-      <div className={`relative flex items-end bg-white/80 backdrop-blur-xl border-2 ${disabled ? 'border-brand-border opacity-70' : 'border-brand-border/60 focus-within:border-brand-gold focus-within:shadow-2xl focus-within:shadow-brand-gold/10'} rounded-[2.5rem] shadow-xl overflow-hidden transition-all duration-500 px-3 py-2.5`}>
-        {/* Attachment Button */}
-        <button 
-          title="Tải ảnh lên (Sắp ra mắt)"
-          className="p-3 text-brand-text-muted hover:text-brand-red transition-all duration-300 disabled:opacity-50 flex-shrink-0 hover:bg-brand-cream rounded-full"
-          type="button"
-          disabled={disabled}
-        >
-          <ImageIcon size={22} />
-        </button>
-
+      <div className={`relative flex items-end bg-white/80 backdrop-blur-xl border-2 ${disabled ? 'border-brand-border opacity-70' : 'border-brand-border/60 focus-within:border-brand-gold focus-within:shadow-2xl focus-within:shadow-brand-gold/10'} rounded-[2.5rem] shadow-xl overflow-hidden transition-all duration-500 pl-5 pr-3 py-2.5`}>
         {/* Text Area */}
         <textarea
           ref={textareaRef}
@@ -57,7 +47,7 @@ export default function MessageInput({ onSendMessage, disabled }: MessageInputPr
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Hãy để Sommelier dẫn lối quý khách..."
-          className="w-full max-h-48 min-h-[44px] py-3 px-3 bg-transparent resize-none outline-none text-brand-text font-medium placeholder-[#a39485]/60 leading-relaxed text-[15px]"
+          className="w-full max-h-48 min-h-[44px] py-3 bg-transparent resize-none outline-none text-brand-text font-medium placeholder-[#a39485]/60 leading-relaxed text-[15px]"
           rows={1}
           disabled={disabled}
         />

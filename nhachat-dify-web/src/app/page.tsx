@@ -17,14 +17,37 @@ export default function Home() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load profile from localStorage (moved from ChatArea)
+  // Load profile and sessions from localStorage
   useEffect(() => {
     const savedProfile = localStorage.getItem("nhat-chat-user-profile");
     if (savedProfile) {
       setUserProfile(JSON.parse(savedProfile));
     }
+
+    const savedSessions = localStorage.getItem("nha-chat-sessions");
+    if (savedSessions) {
+      try {
+        setSessions(JSON.parse(savedSessions));
+        // Optionally select the most recent session
+        const parsed = JSON.parse(savedSessions);
+        if (parsed.length > 0) {
+          setCurrentSessionId(parsed[0].id);
+        }
+      } catch (e) {
+        console.error("Could not parse sessions");
+      }
+    }
+    setIsLoaded(true);
   }, []);
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem("nha-chat-sessions", JSON.stringify(sessions));
+    }
+  }, [sessions, isLoaded]);
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || null;
 

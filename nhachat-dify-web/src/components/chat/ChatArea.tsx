@@ -12,12 +12,19 @@ import { FeedbackCollector } from "./FeedbackCollector";
 import { Message } from "@/types/chat";
 import { ChatSession } from "@/app/page";
 
-const SHORTCUTS = [
-  { icon: Wine, title: "Khám phá Vang", desc: "Theo quốc gia, giống nho" },
-  { icon: Search, title: "Tìm Vang", desc: "Đỏ, Trắng, Sủi bọt" },
-  { icon: Gift, title: "Quà tặng", desc: "Cho ngày lễ, đối tác" },
-  { icon: Sparkles, title: "Kết hợp Món ăn", desc: "Bò bít tết, hải sản" },
+const HARDCODED_QUESTIONS = [
+  "Nhà Chát đang bán những dòng vang gì?",
+  "Vang đỏ Nhà Chát nhập khẩu từ đâu?",
+  "Giới thiệu những dòng vang hay dùng làm quà tặng",
+  "Giới thiệu vang dễ uống cho người mới",
+  "Thời gian giao hàng"
 ];
+
+const SHORTCUTS = HARDCODED_QUESTIONS.map(q => ({
+  icon: Wine,
+  title: q,
+  desc: ""
+}));
 
 interface ChatAreaProps {
   currentSession: ChatSession | null;
@@ -91,21 +98,11 @@ export default function ChatArea({
     }
     cleanContent = cleanContent.replace(productRegex, "");
 
-    // Extract suggested questions
+    // Extract suggested questions (ignored, we use hardcoded ones)
     const questionsRegex = /<suggested_questions>([\s\S]*?)<\/suggested_questions>/g;
-    while ((match = questionsRegex.exec(text)) !== null) {
-      try {
-        const questions = JSON.parse(match[1]);
-        if (Array.isArray(questions)) {
-          suggestedQuestions.push(...questions);
-        }
-      } catch (e) {
-        // Silently handle partial JSON
-      }
-    }
     cleanContent = cleanContent.replace(questionsRegex, "");
 
-    return { cleanContent, productCards, suggestedQuestions };
+    return { cleanContent, productCards, suggestedQuestions: HARDCODED_QUESTIONS };
   };
 
   const handleSendMessage = async (text: string) => {
@@ -235,7 +232,7 @@ export default function ChatArea({
 
       <div 
         ref={scrollRef}
-        className="flex-1 w-full overflow-y-auto pt-20 md:pt-10 pb-32 px-4 md:px-10 scroll-smooth"
+        className="flex-1 w-full overflow-y-auto pt-20 md:pt-10 pb-48 md:pb-56 px-4 md:px-10 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto w-full flex flex-col gap-8">
           {messages.length === 0 ? (
@@ -258,18 +255,17 @@ export default function ChatArea({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl">
+              <div className="flex flex-wrap justify-center gap-3 w-full max-w-4xl">
                 {SHORTCUTS.map((item, index) => (
                   <button 
                     key={index} 
                     onClick={() => handleShortcutClick(item.title)}
-                    className="group flex flex-col items-center justify-center p-5 bg-white/40 backdrop-blur-md hover:bg-white border border-white/60 hover:border-brand-gold rounded-[2rem] transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-gold/10 active:scale-95"
+                    className="group flex items-center gap-3 p-4 bg-white/40 backdrop-blur-md hover:bg-white border border-white/60 hover:border-brand-gold rounded-full transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-gold/10 active:scale-95"
                   >
-                    <div className="p-4 bg-white rounded-2xl mb-4 group-hover:bg-brand-red group-hover:text-white transition-all duration-500 shadow-sm group-hover:shadow-lg group-hover:shadow-brand-red/20">
-                      <item.icon size={24} className="group-hover:scale-110 transition-transform duration-500" />
+                    <div className="p-2 bg-white rounded-full group-hover:bg-brand-red group-hover:text-white transition-all duration-500 shadow-sm group-hover:shadow-md">
+                      <item.icon size={16} className="group-hover:scale-110 transition-transform duration-500" />
                     </div>
-                    <span className="font-serif font-bold text-[#3d2c23] text-sm mb-1 tracking-tight">{item.title}</span>
-                    <span className="text-[10px] uppercase font-bold text-brand-gold/70 group-hover:text-brand-red transition-colors duration-500 tracking-widest">{item.desc}</span>
+                    <span className="font-sans font-medium text-[#3d2c23] text-sm tracking-tight pr-2">{item.title}</span>
                   </button>
                 ))}
               </div>

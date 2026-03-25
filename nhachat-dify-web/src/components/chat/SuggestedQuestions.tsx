@@ -19,7 +19,7 @@ export default function SuggestedQuestions({ questions, onSelect }: SuggestedQue
         <button
           key={index}
           onClick={() => onSelect(question)}
-          className="bg-white hover:bg-brand-cream-sidebar text-brand-text border border-brand-border px-4 py-2.5 rounded-2xl text-sm font-medium transition-all duration-300 hover:border-brand-gold hover:text-brand-red shadow-sm hover:shadow-md active:scale-95"
+          className="bg-white hover:bg-brand-cream-sidebar text-[#6b5850] border border-[#e6d8c8] px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-300 hover:border-brand-gold hover:text-brand-red shadow-sm hover:shadow-md active:scale-95 text-left leading-tight max-w-full"
         >
           {question}
         </button>
