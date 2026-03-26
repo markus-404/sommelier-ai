@@ -18,8 +18,8 @@ export default function Sidebar({ sessions, currentSessionId, onNewChat, onSwitc
         className="flex items-center gap-4 mb-12 px-2 group cursor-pointer"
         onClick={onNewChat}
       >
-        <div className="w-12 h-12 wine-gradient text-white rounded-2xl shadow-xl flex items-center justify-center transform transition-transform group-hover:rotate-6 duration-300">
-          <Wine size={28} />
+        <div className="w-12 h-12 rounded-2xl shadow-[0_10px_20px_-5px_rgba(155,28,49,0.3)] flex items-center justify-center overflow-hidden transform transition-all group-hover:scale-105 duration-500 border border-brand-gold/30">
+          <img src="/nha-chat-logo.png" alt="Nhà Chát" className="w-full h-full object-cover" />
         </div>
         <div>
           <h1 className="font-serif font-black text-2xl text-brand-red tracking-tight leading-none italic">
@@ -33,11 +33,11 @@ export default function Sidebar({ sessions, currentSessionId, onNewChat, onSwitc
 
       {/* Primary Actions */}
       <button 
-        className="flex items-center justify-center gap-3 w-full py-4 px-6 wine-gradient text-white rounded-[1.25rem] transition-all duration-300 shadow-xl hover:shadow-brand-red/30 font-bold active:scale-95 mb-10 group"
+        className="flex items-center justify-center gap-2.5 w-full py-4 px-4 wine-gradient text-white rounded-[1.25rem] transition-all duration-300 shadow-xl hover:shadow-brand-red/30 font-bold active:scale-95 mb-10 group whitespace-nowrap overflow-hidden"
         onClick={onNewChat}
       >
-        <Plus size={20} className="group-hover:rotate-180 transition-transform duration-500" />
-        <span className="text-sm tracking-wide">Cuộc trò chuyện mới</span>
+        <Plus size={20} className="group-hover:rotate-180 transition-transform duration-500 shrink-0" />
+        <span className="text-[13px] tracking-wide truncate">Cuộc trò chuyện mới</span>
       </button>
 
       {/* Navigation / History */}

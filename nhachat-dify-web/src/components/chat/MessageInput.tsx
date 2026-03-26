@@ -6,9 +6,10 @@ import { useState, useRef, useEffect } from "react";
 interface MessageInputProps {
   onSendMessage: (text: string) => void;
   disabled?: boolean;
+  onStop?: () => void;
 }
 
-export default function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
+export default function MessageInput({ onSendMessage, disabled, onStop }: MessageInputProps) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -52,19 +53,29 @@ export default function MessageInput({ onSendMessage, disabled }: MessageInputPr
           disabled={disabled}
         />
 
-        {/* Send Button */}
-        <button
-          onClick={handleSend}
-          disabled={disabled || !text.trim()}
-          className={`p-3.5 rounded-full transition-all duration-500 transform active:scale-90 flex-shrink-0 shadow-sm ${
-            text.trim() && !disabled 
-              ? "wine-gradient text-white shadow-lg shadow-brand-red/20 hover:shadow-brand-red/40 hover:-translate-y-0.5" 
-              : "bg-brand-cream text-brand-text-muted cursor-not-allowed opacity-40"
-          }`}
-          title="Gửi tin nhắn"
-        >
-          <Send size={18} fill={text.trim() && !disabled ? "currentColor" : "none"} className={text.trim() && !disabled ? "animate-in zoom-in-50" : ""} />
-        </button>
+        {/* Control Button: Send or Stop */}
+        {disabled && onStop ? (
+          <button
+            onClick={onStop}
+            className="p-3.5 rounded-full transition-all duration-500 transform active:scale-90 flex-shrink-0 bg-[#3d2c23] hover:bg-[#2a1b15] text-white shadow-xl flex items-center justify-center w-[46px] h-[46px]"
+            title="Dừng phản hồi"
+          >
+            <div className="w-3.5 h-3.5 bg-white rounded-sm animate-pulse" />
+          </button>
+        ) : (
+          <button
+            onClick={handleSend}
+            disabled={disabled || !text.trim()}
+            className={`p-3.5 rounded-full transition-all duration-500 transform active:scale-90 flex-shrink-0 shadow-sm w-[46px] h-[46px] flex items-center justify-center ${
+              text.trim() && !disabled 
+                ? "wine-gradient text-white shadow-lg shadow-brand-red/20 hover:shadow-brand-red/40 hover:-translate-y-0.5" 
+                : "bg-brand-cream text-brand-text-muted cursor-not-allowed opacity-40"
+            }`}
+            title="Gửi tin nhắn"
+          >
+            <Send size={18} fill={text.trim() && !disabled ? "currentColor" : "none"} className={text.trim() && !disabled ? "animate-in zoom-in-50" : ""} />
+          </button>
+        )}
       </div>
 
       <div className="flex justify-center items-center gap-3 opacity-40 group-focus-within:opacity-80 transition-opacity duration-700">

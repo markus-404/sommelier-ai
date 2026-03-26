@@ -52,13 +52,29 @@ export default function ChatArea({
   const messages = currentSession?.messages || [];
   const conversationId = currentSession?.conversationId || "";
 
-  // Show profile wizard for new users
+  // Show profile wizard for new users (removed auto-popup per user request)
   useEffect(() => {
-    if (!userProfile) {
-      const timer = setTimeout(() => setShowProfileWizard(true), 1500);
-      return () => clearTimeout(timer);
-    }
+    // Popup is now only manually triggered via the button
   }, [userProfile]);
+
+  const prevSessionIdRef = useRef<string | undefined | null>(currentSession?.id);
+
+  // Bug Fix TC-03: Abort ongoing streams when switching AWAY from an active session
+  useEffect(() => {
+    const prev = prevSessionIdRef.current;
+    const curr = currentSession?.id;
+    
+    // Only abort if transitioning AWAY from a previously active session
+    if (prev && prev !== curr) {
+      if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+          abortControllerRef.current = null;
+          setIsLoading(false);
+      }
+    }
+    
+    prevSessionIdRef.current = curr;
+  }, [currentSession?.id]);
 
   const handleProfileComplete = (profile: any) => {
     if (!profile) {
@@ -82,7 +98,6 @@ export default function ChatArea({
 
   const parseAssistantResponse = (text: string) => {
     const productCards: WineProduct[] = [];
-    const suggestedQuestions: string[] = [];
     let cleanContent = text;
 
     // Extract product cards
@@ -98,11 +113,21 @@ export default function ChatArea({
     }
     cleanContent = cleanContent.replace(productRegex, "");
 
-    // Extract suggested questions (ignored, we use hardcoded ones)
+    // Extract suggested questions (ignored from stream, we use hardcoded ones in the global UI)
     const questionsRegex = /<suggested_questions>([\s\S]*?)<\/suggested_questions>/g;
     cleanContent = cleanContent.replace(questionsRegex, "");
 
-    return { cleanContent, productCards, suggestedQuestions: HARDCODED_QUESTIONS };
+    return { cleanContent, productCards };
+  };
+
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
   };
 
   const handleSendMessage = async (text: string) => {
@@ -125,11 +150,14 @@ export default function ChatArea({
     setIsLoading(true);
 
     try {
+      abortControllerRef.current = new AbortController();
       const response = await fetch("/api/chat", {
         method: "POST",
+        signal: abortControllerRef.current.signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
+          history: messages.map(m => ({ role: m.role, content: m.content })),
           conversationId: conversationId,
           user: "webapp-user",
           inputs: userProfile ? {
@@ -168,14 +196,13 @@ export default function ChatArea({
                 
                 if (data.event === "message") {
                   assistantContent += data.answer;
-                  const { cleanContent, productCards, suggestedQuestions } = parseAssistantResponse(assistantContent);
+                  const { cleanContent, productCards } = parseAssistantResponse(assistantContent);
                   
                   activeMessages = activeMessages.map((msg) => 
                     msg.id === assistantMsgId ? { 
                       ...msg, 
                       content: cleanContent,
-                      productCards: productCards.length > 0 ? productCards : undefined,
-                      suggestedQuestions: suggestedQuestions.length > 0 ? suggestedQuestions : undefined
+                      productCards: productCards.length > 0 ? productCards : undefined
                     } : msg
                   );
 
@@ -183,6 +210,8 @@ export default function ChatArea({
                     messages: activeMessages,
                     conversationId: data.conversation_id || conversationId
                   });
+                } else if (data.event === "error") {
+                  throw new Error(data.message || data.error || "Đã xảy ra lỗi kết nối từ AI Server.");
                 }
               } catch (e) { /* Ignore incomplete JSON */ }
             }
@@ -190,15 +219,18 @@ export default function ChatArea({
         }
       }
     } catch (error: any) {
-      onUpdateSession(activeSessionId, {
-        messages: activeMessages.map((msg) => 
-          msg.id === assistantMsgId 
-            ? { ...msg, content: `Xin lỗi, đã có lỗi xảy ra: ${error.message}` } 
-            : msg
-        )
-      });
+      if (error.name !== "AbortError") {
+        onUpdateSession(activeSessionId, {
+          messages: activeMessages.map((msg) => 
+            msg.id === assistantMsgId 
+              ? { ...msg, content: `Xin lỗi, đã có lỗi xảy ra: ${error.message}` } 
+              : msg
+          )
+        });
+      }
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -232,7 +264,7 @@ export default function ChatArea({
 
       <div 
         ref={scrollRef}
-        className="flex-1 w-full overflow-y-auto pt-20 md:pt-10 pb-48 md:pb-56 px-4 md:px-10 scroll-smooth"
+        className="flex-1 w-full overflow-y-auto pt-20 md:pt-10 pb-48 md:pb-56 px-4 md:px-10"
       >
         <div className="max-w-4xl mx-auto w-full flex flex-col gap-8">
           {messages.length === 0 ? (
@@ -247,15 +279,18 @@ export default function ChatArea({
                 <p className="text-brand-text-muted text-lg max-w-lg mx-auto font-light leading-relaxed">
                   Chào mừng bạn đến với <span className="text-brand-red font-semibold">Nhà Chát</span>. Tôi là Sommelier riêng của bạn, sẵn sàng kiến tạo trải nghiệm rượu vang hoàn hảo nhất.
                 </p>
-                {userProfile && (
-                  <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-medium">
-                    <User size={12} />
-                    Đang áp dụng Gu cá nhân: {userProfile.prefer}
+                {userProfile && Object.keys(userProfile).length > 0 && (
+                  <div className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-[#fcfbf9] border border-[#f0e6da] shadow-[0_2px_8px_rgba(0,0,0,0.02)] text-[#3d2c23] text-xs font-medium max-w-[80%] mx-auto relative overflow-hidden group/badge">
+                    <div className="absolute inset-0 bg-brand-gold/5 group-hover/badge:bg-brand-gold/10 transition-colors" />
+                    <User size={14} className="text-brand-gold relative z-10" />
+                    <span className="relative z-10">
+                        <span className="font-bold text-brand-red">Gu cá nhân:</span> {userProfile.intensity}, {userProfile.sweetness}, {userProfile.occasion}
+                    </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-wrap justify-center gap-3 w-full max-w-4xl">
+              <div className="flex flex-wrap justify-center gap-3 w-full max-w-4xl pb-16">
                 {SHORTCUTS.map((item, index) => (
                   <button 
                     key={index} 
@@ -271,7 +306,8 @@ export default function ChatArea({
               </div>
             </div>
           ) : (
-            messages.map((msg, idx) => (
+            <div className="flex flex-col gap-6 w-full pb-48">
+              {messages.map((msg, idx) => (
               <div 
                 key={msg.id} 
                 className={`flex w-full gap-4 md:gap-6 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"} animate-in fade-in slide-in-from-bottom-2 duration-500`}
@@ -290,15 +326,23 @@ export default function ChatArea({
                       : "bg-white border border-brand-border text-brand-text rounded-tl-none"
                   }`}>
                     {msg.role === "assistant" ? (
-                      <div className="prose prose-brand prose-slate dark:prose-invert max-w-none prose-p:my-1 prose-headings:text-brand-red prose-strong:text-brand-red prose-a:text-brand-gold prose-a:font-bold prose-ul:list-disc">
-                        <ReactMarkdown 
-                          components={{
-                            a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:decoration-brand-red transition-all" />,
-                          }}
-                        >
-                          {msg.content || "..."}
-                        </ReactMarkdown>
-                      </div>
+                      msg.content === "" ? (
+                        <div className="flex items-center h-6 gap-1.5 px-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      ) : (
+                        <div className="prose prose-brand prose-slate dark:prose-invert max-w-none prose-p:my-1 prose-headings:text-brand-red prose-strong:text-brand-red prose-a:text-brand-gold prose-a:font-bold prose-ul:list-disc">
+                          <ReactMarkdown 
+                            components={{
+                              a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:decoration-brand-red transition-all" />,
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      )
                     ) : (
                       <p className="whitespace-pre-wrap">{msg.content}</p>
                     )}
@@ -315,53 +359,42 @@ export default function ChatArea({
                           <WineCard product={product} />
                         </div>
                       ))}
-                      {msg.suggestedQuestions && (
-                        <SuggestedQuestions 
-                          questions={msg.suggestedQuestions} 
-                          onSelect={handleSendMessage} 
-                        />
-                      )}
                     </div>
                   )}
                 </div>
               </div>
-            ))
-          )}
-          
-          {isLoading && !messages[messages.length-1]?.content && (
-            <div className="flex gap-4 md:gap-6 flex-row animate-pulse">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl wine-gradient text-white flex items-center justify-center shadow-lg">
-                <Wine size={22} />
-              </div>
-              <div className="bg-white border border-brand-border rounded-3xl rounded-tl-none px-6 py-4 flex items-center gap-1.5 wine-card-shadow">
-                <div className="w-2.5 h-2.5 rounded-full bg-brand-gold animate-bounce" />
-                <div className="w-2.5 h-2.5 rounded-full bg-brand-gold animate-bounce [animation-delay:-.3s]" />
-                <div className="w-2.5 h-2.5 rounded-full bg-brand-gold animate-bounce [animation-delay:-.5s]" />
-              </div>
+            ))}
             </div>
           )}
+          
+          {/* No secondary floating typing indicator needed since the empty message bubble naturally handles it */}
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-brand-cream via-brand-cream/90 to-transparent flex flex-col items-center gap-4 z-20">
-        <div className="flex gap-2 mb-2">
-            <button 
-                onClick={() => setShowPairingWizard(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur border border-brand-border rounded-full text-xs font-serif font-bold text-brand-red hover:bg-white hover:border-brand-gold transition-all shadow-sm group"
-            >
-                <Wand2 className="w-3.5 h-3.5" />
-                Kết hợp món ăn
-            </button>
-            <button 
-                onClick={() => setShowProfileWizard(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur border border-brand-border rounded-full text-xs font-serif font-bold text-brand-gold hover:bg-white hover:border-brand-red transition-all shadow-sm group"
-            >
-                <User className="w-3.5 h-3.5" />
-                Thay đổi Gu
-            </button>
-        </div>
-        <div className="w-full max-w-3xl">
-          <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
+      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-brand-cream via-brand-cream/90 to-transparent flex flex-col items-center gap-4 z-20 pointer-events-none">
+        <div className="w-full max-w-3xl flex flex-col items-center gap-4 pointer-events-auto">
+          {messages.length > 0 && !isLoading && (
+            <div className="w-full animate-in slide-in-from-bottom-5 fade-in duration-500">
+               <SuggestedQuestions questions={HARDCODED_QUESTIONS} onSelect={handleSendMessage} />
+            </div>
+          )}
+          <div className="flex gap-2 w-full justify-center">
+              <button 
+                  onClick={() => setShowPairingWizard(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md border border-brand-border rounded-full text-[13px] font-sans font-semibold text-brand-red hover:bg-white hover:border-brand-gold transition-all shadow-md hover:shadow-lg group"
+              >
+                  <Wand2 className="w-4 h-4" />
+                  Kết hợp món ăn
+              </button>
+              <button 
+                  onClick={() => setShowProfileWizard(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md border border-brand-border rounded-full text-[13px] font-sans font-semibold text-brand-gold hover:bg-white hover:text-brand-red transition-all shadow-md hover:shadow-lg group"
+              >
+                  <User className="w-4 h-4" />
+                  Thay đổi Gu
+              </button>
+          </div>
+          <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} onStop={handleStop} />
         </div>
       </div>
     </div>
