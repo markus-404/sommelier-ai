@@ -12,6 +12,8 @@ import { FeedbackCollector } from "./FeedbackCollector";
 import { Message } from "@/types/chat";
 import { ChatSession } from "@/app/page";
 
+const FOOTER_TEXT = "The Taste of Maturity";
+
 const HARDCODED_QUESTIONS = [
   "Nhà Chát đang bán những dòng vang gì?",
   "Vang đỏ Nhà Chát nhập khẩu từ đâu?",

@@ -47,7 +47,7 @@ export default function MessageInput({ onSendMessage, disabled, onStop }: Messag
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Bạn hỗ trợ gì về vang...?"
+          placeholder="Bạn cần hỗ trợ về vang...?"
           className="w-full max-h-48 min-h-[44px] py-3 bg-transparent resize-none outline-none text-brand-text font-medium placeholder-[#a39485]/60 leading-relaxed text-[15px]"
           rows={1}
           disabled={disabled}
@@ -81,7 +81,7 @@ export default function MessageInput({ onSendMessage, disabled, onStop }: Messag
       <div className="flex justify-center items-center gap-3 opacity-40 group-focus-within:opacity-80 transition-opacity duration-700">
         <div className="h-[1px] w-8 bg-brand-gold"></div>
         <p className="text-center text-[10px] font-bold text-brand-text-muted tracking-[0.2em] uppercase">
-          Art of Wine • <span className="text-brand-red">Nha Chat Sommelier</span>
+          The Taste of Maturity • <span className="text-brand-red">Nha Chat Sommelier</span>
         </p>
         <div className="h-[1px] w-8 bg-brand-gold"></div>
       </div>
