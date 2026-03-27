@@ -15,12 +15,12 @@ export default function SuggestedQuestions({ questions, onSelect }: SuggestedQue
         <MessageSquare size={12} />
         <span>Gợi ý cho bạn</span>
       </div>
-      <div className="flex flex-wrap gap-2 w-full">
+      <div className="flex flex-wrap gap-2 w-full pb-1">
         {questions.map((question, index) => (
           <button
             key={index}
             onClick={() => onSelect(question)}
-            className="bg-white/90 backdrop-blur-sm hover:bg-white text-[#6b5850] border border-[#e6d8c8] px-4 py-[7px] rounded-full text-[13px] font-medium transition-all duration-300 hover:border-brand-gold hover:text-brand-red shadow-sm hover:shadow-md active:scale-95 whitespace-nowrap"
+            className="bg-white/90 backdrop-blur-sm hover:bg-white text-[#6b5850] border border-[#e6d8c8] px-3 md:px-4 py-[6px] md:py-[7px] rounded-full text-[12px] md:text-[13px] font-medium transition-all duration-300 hover:border-brand-gold hover:text-brand-red shadow-sm hover:shadow-md active:scale-95 whitespace-nowrap"
           >
             {question}
           </button>

@@ -412,7 +412,7 @@ export default function ChatArea({
       <div className="absolute bottom-0 left-0 right-0 p-4 md:px-8 md:py-6 bg-gradient-to-t from-brand-cream via-brand-cream/95 to-transparent flex flex-col items-center gap-2 z-20 pointer-events-none">
         <div className="w-full max-w-3xl flex flex-col items-center gap-2 pointer-events-auto relative">
           
-          <div className={`w-full transition-all duration-500 overflow-hidden ${showSuggestions && messages.length > 0 && !isLoading ? 'max-h-[100px] opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-4'}`}>
+          <div className={`w-full transition-all duration-500 overflow-hidden ${showSuggestions && messages.length > 0 && !isLoading ? 'max-h-[150px] opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-4'}`}>
                <SuggestedQuestions questions={HARDCODED_QUESTIONS} onSelect={handleSendMessage} />
           </div>
 
