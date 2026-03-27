@@ -18,14 +18,19 @@ export default function Sidebar({ sessions, currentSessionId, onNewChat, onSwitc
         className="flex items-center gap-4 mb-12 px-2 group cursor-pointer"
         onClick={onNewChat}
       >
-        <div className="w-12 h-12 rounded-2xl shadow-[0_10px_20px_-5px_rgba(155,28,49,0.3)] flex items-center justify-center overflow-hidden transform transition-all group-hover:scale-105 duration-500 border border-brand-gold/30">
-          <img src="/nha-chat-logo.png" alt="Nhà Chát" className="w-full h-full object-cover" />
+        <div className="w-14 h-14 rounded-2xl shadow-[0_12px_24px_-8px_rgba(155,28,49,0.4)] flex items-center justify-center overflow-hidden transform transition-all group-hover:scale-105 duration-500 border border-brand-gold/40 relative bg-brand-red">
+          <img 
+            src="/nha-chat-logo.png" 
+            alt="Logo" 
+            className="w-[140%] h-[140%] object-cover scale-150 -translate-y-[10%]" 
+            style={{ imageRendering: 'crisp-edges' }}
+          />
         </div>
         <div>
           <h1 className="font-serif font-black text-2xl text-brand-red tracking-tight leading-none italic">
             Nhà Chát
           </h1>
-          <span className="block text-[10px] font-bold text-brand-gold uppercase tracking-[0.25em] mt-1.5 opacity-80">
+          <span className="block text-[10px] font-bold text-brand-gold uppercase tracking-[0.25em] mt-2 opacity-90">
             Elite Sommelier
           </span>
         </div>
