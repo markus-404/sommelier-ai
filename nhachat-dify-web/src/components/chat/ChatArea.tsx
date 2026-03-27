@@ -48,6 +48,21 @@ export default function ChatArea({
   const [showProfileWizard, setShowProfileWizard] = useState(false);
   const [showPairingWizard, setShowPairingWizard] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScrollY = e.currentTarget.scrollTop;
+    if (currentScrollY < lastScrollY && currentScrollY > 150) {
+      // Scrolling up => Hide
+      setShowSuggestions(false);
+    } else if (currentScrollY > lastScrollY) {
+      // Scrolling down => Show
+      setShowSuggestions(true);
+    }
+    setLastScrollY(currentScrollY);
+  };
 
   const messages = currentSession?.messages || [];
   const conversationId = currentSession?.conversationId || "";
@@ -262,9 +277,28 @@ export default function ChatArea({
         <h2 className="font-serif font-bold text-brand-red">Nhà Chát Sommelier</h2>
       </div>
 
+      {/* Persistent Top Floating Action Bar */}
+      <div className="absolute top-4 right-4 z-20 hidden md:flex gap-2">
+          <button 
+              onClick={() => setShowPairingWizard(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-md border border-[#f0e6da] rounded-xl text-[12px] font-sans font-semibold text-brand-red hover:bg-white hover:border-brand-gold transition-all shadow-sm group"
+          >
+              <Wand2 className="w-3.5 h-3.5" />
+              Kết hợp món ăn
+          </button>
+          <button 
+              onClick={() => setShowProfileWizard(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-md border border-[#f0e6da] rounded-xl text-[12px] font-sans font-semibold text-brand-gold hover:bg-white hover:text-brand-red transition-all shadow-sm group"
+          >
+              <User className="w-3.5 h-3.5" />
+              Thay đổi Gu
+          </button>
+      </div>
+
       <div 
         ref={scrollRef}
-        className="flex-1 w-full overflow-y-auto pt-20 md:pt-10 pb-48 md:pb-56 px-4 md:px-10"
+        onScroll={handleScroll}
+        className="flex-1 w-full overflow-y-auto pt-20 md:pt-14 pb-48 md:pb-52 px-4 md:px-10 scroll-smooth"
       >
         <div className="max-w-4xl mx-auto w-full flex flex-col gap-8">
           {messages.length === 0 ? (
@@ -375,24 +409,13 @@ export default function ChatArea({
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-brand-cream via-brand-cream/90 to-transparent flex flex-col items-center gap-4 z-20 pointer-events-none">
-        <div className="w-full max-w-3xl flex flex-col items-center gap-4 pointer-events-auto">
-          <div className="flex gap-2 w-full justify-center">
-              <button 
-                  onClick={() => setShowPairingWizard(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md border border-brand-border rounded-full text-[13px] font-sans font-semibold text-brand-red hover:bg-white hover:border-brand-gold transition-all shadow-md hover:shadow-lg group"
-              >
-                  <Wand2 className="w-4 h-4" />
-                  Kết hợp món ăn
-              </button>
-              <button 
-                  onClick={() => setShowProfileWizard(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-md border border-brand-border rounded-full text-[13px] font-sans font-semibold text-brand-gold hover:bg-white hover:text-brand-red transition-all shadow-md hover:shadow-lg group"
-              >
-                  <User className="w-4 h-4" />
-                  Thay đổi Gu
-              </button>
+      <div className="absolute bottom-0 left-0 right-0 p-4 md:px-8 md:py-6 bg-gradient-to-t from-brand-cream via-brand-cream/95 to-transparent flex flex-col items-center gap-2 z-20 pointer-events-none">
+        <div className="w-full max-w-3xl flex flex-col items-center gap-2 pointer-events-auto relative">
+          
+          <div className={`w-full transition-all duration-500 overflow-hidden ${showSuggestions && messages.length > 0 && !isLoading ? 'max-h-[100px] opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-4'}`}>
+               <SuggestedQuestions questions={HARDCODED_QUESTIONS} onSelect={handleSendMessage} />
           </div>
+
           <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} onStop={handleStop} />
         </div>
       </div>

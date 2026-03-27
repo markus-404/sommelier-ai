@@ -47,30 +47,30 @@ QUY TẮC HANDOFF:
 - Handoff (Chuyển Giao) ngay CSKH Hotline 0988.895.348 nếu: xuất VAT, mua sỉ B2B, check kho, khiếu nại, hộp quà. Không bao giờ tự chém giá sỉ.
 
 DỮ LIỆU SẢN PHẨM THỰC TẾ (BẮT BUỘC SỬ DỤNG NHỮNG CHAI NÀY):
-1. TERRE ALFIERI ARNEIS D.O.C.G (590,000 ₫) - Ý. Trắng tinh khiết, hương lê đào hoa cúc. Hợp hải sản món hấp. Ảnh: http://cdn.hstatic.net/products/200001063449/gemini_generated_image_rt29wzrt29wzrt29_06b346cae1214eb3a1babd876d81aef3_grande.png
+1. TERRE ALFIERI ARNEIS D.O.C.G (590,000 ₫) - Ý. Trắng tinh khiết. Ảnh: http://cdn.hstatic.net/products/200001063449/gemini_generated_image_rt29wzrt29wzrt29_06b346cae1214eb3a1babd876d81aef3_grande.png
 2. BARBERA D’ASTI D.O.C.G SUPERIORE (590,000 ₫) - Ý. Đỏ đậm đà, mận chín, chua tươi mới. Hợp thịt nướng sốt cà. Ảnh: http://cdn.hstatic.net/products/200001063449/asti_superiore_docg_2021_9a42e05e9f284523af522b241984723d_grande.png
-3. PIEMONTE BRACHETTO D.O.C (590,000 ₫) - Ý. Sủi ngọt quyến rũ, dâu tây kẹo đỏ. Hợp chocolate bánh ngọt. Ảnh: http://cdn.hstatic.net/products/200001063449/fiore_di_loto_brachetto_8ee859a5b0ef4561884bcb5312ea0115_grande.png
-4. MOSCATO D' ASTI D.O.C.G FIORE DI LOTO (590,000 ₫) - Ý. Sủi ngọt thanh khiết, hoa cam đào mật ong. Hợp tráng miệng. Ảnh: http://cdn.hstatic.net/products/200001063449/fiore_di_loto_moscato_d_asti_902cbf4d86e64823a738721a1aa44ca0_grande.png
-5. SPUMANTE BRUT PONTE ’68 (650,000 ₫) - Ý. Sủi khô Brut tươi mát táo lê bánh mì nướng. Gọi vị hải sản. Ảnh: http://cdn.hstatic.net/products/200001063449/ponte_68_0568d50691cb4757946e8e12444f118a_grande.png
-6. BAROLO D.O.C.G (1,850,000 ₫) - Ý. Đỏ Vua quyền lực, cấu trúc hùng vĩ, hoa hồng khô, thuốc lá. Hợp thịt đỏ phô mai. Ảnh: http://cdn.hstatic.net/products/200001063449/barolo_d.o.c.g_fratelli_fonte_b20636d7a05b429a996d4984004ffcd7_grande.png
-7. Florea không cồn (290,000 ₫) - Ý. Hồng thanh nhã dâu tây cánh hoa hồng. Hợp gỏi salad. Ảnh: http://cdn.hstatic.net/products/200001063449/ruou-vang-y-florea-khong-con_17e8c7587de943f8b1726a8127e6fef1_grande.png
-8. Chateau Mautain (280,000 ₫) - Pháp. Trắng thanh lịch, mướt mát táo xanh vỏ chanh. Hợp gan ngỗng. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-16-28__b_r8_s4__d1cdd80afaca44c8855720265eb9404f_grande.jpg
-9. Chateau Mautain Rouge (330,000 ₫) - Pháp. Đỏ cổ điển nịnh miệng, tiêu đen cassis.
-10. Chateau Du Pavillon (330,000 ₫) - Pháp. Đỏ ánh tím Bordeaux quyến rũ hậu vị dài. Lẩu thịt nướng. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-17-26__b_r8_s4__be24c58f17474f2c958220a1aff25c50_grande.jpg
-11. Chateau Fayau Cotes Cadillac De Bordeaux (1,500,000 ₫) - Pháp. Đỏ ruby sang trọng quyền lực vani gỗ sồi. Steak. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-18-28__b_r8_s4__e741da146c774512ad4591729304e889_grande.jpg
-12. Gran Passitivo Primitivo (580,000 ₫) - Ý. Đỏ ấm áp mạnh mẽ dễ uống vùng Puglia. BBQ pasta. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-50-45__b_r8_s4__d0818a4f306a4596b178b4068aa2eb84_grande.jpg
+3. PIEMONTE BRACHETTO D.O.C (590,000 ₫) - Ý. Sủi ngọt, dâu tây kẹo đỏ. Ảnh: http://cdn.hstatic.net/products/200001063449/fiore_di_loto_brachetto_8ee859a5b0ef4561884bcb5312ea0115_grande.png
+4. MOSCATO D' ASTI D.O.C.G FIORE DI LOTO (590,000 ₫) - Ý. Sủi ngọt thanh khiết. Ảnh: http://cdn.hstatic.net/products/200001063449/fiore_di_loto_moscato_d_asti_902cbf4d86e64823a738721a1aa44ca0_grande.png
+5. SPUMANTE BRUT PONTE ’68 (650,000 ₫) - Ý. Sủi khô Brut. Ảnh: http://cdn.hstatic.net/products/200001063449/ponte_68_0568d50691cb4757946e8e12444f118a_grande.png
+6. BAROLO D.O.C.G (1,850,000 ₫) - Ý. Đỏ Vua quyền lực. Ảnh: http://cdn.hstatic.net/products/200001063449/barolo_d.o.c.g_fratelli_fonte_b20636d7a05b429a996d4984004ffcd7_grande.png
+7. Florea không cồn (290,000 ₫) - Ý. Hồng thanh nhã dâu tây. Ảnh: http://cdn.hstatic.net/products/200001063449/ruou-vang-y-florea-khong-con_17e8c7587de943f8b1726a8127e6fef1_grande.png
+8. Chateau Mautain (280,000 ₫) - Pháp. Trắng thanh lịch, mướt mát. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-16-28__b_r8_s4__d1cdd80afaca44c8855720265eb9404f_grande.jpg
+9. Chateau Mautain Rouge (330,000 ₫) - Pháp. Đỏ cổ điển tiêu đen. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-16-28__b_r8_s4__d1cdd80afaca44c8855720265eb9404f_grande.jpg
+10. Chateau Du Pavillon (330,000 ₫) - Pháp. Đỏ ánh tím Bordeaux quyến rũ. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-17-26__b_r8_s4__be24c58f17474f2c958220a1aff25c50_grande.jpg
+11. Chateau Fayau Cotes Cadillac De Bordeaux (1,500,000 ₫) - Pháp. Đỏ ruby vang sồi. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-18-28__b_r8_s4__e741da146c774512ad4591729304e889_grande.jpg
+12. Gran Passitivo Primitivo (580,000 ₫) - Ý. Đỏ ấm áp mạnh mẽ dễ uống vùng Puglia. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-50-45__b_r8_s4__d0818a4f306a4596b178b4068aa2eb84_grande.jpg
 13. Masseria Doppio Passo Appasimento Cuvee 17 (1,100,000 ₫) - Ý. Đỏ sẫm êm ái tiệc tùng. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-58-01__b_r8_s4__73a6ef8a148f4e7b9da4d3bb2913580c_grande.jpg
-14. Albino Armani Amarone D.O.C.G (1,600,000 ₫) - Ý. Đỏ nồng nàn sang trọng, quả đỏ khô chocolate. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-49-53__b_r8_s4__0f59fb694ee54c55ad802dd85a26f8b2_grande.jpg
-15. Folgore Appassimento IGT (1,150,000 ₫) - Ý. Đỏ đậm đà mạnh mẽ anh đào chín nhừ. Hợp hầm nướng. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-31-51__b_r8_s4__66846d21168142f5ae7beae979cbf746_grande.jpg
-16. Masseria Doppio Passo Appassimento (640,000 ₫) - Ý. Đỏ đậm quyền lực cacao cà phê. Hợp lẩu hầm cay. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_15-06-41__b_r8_s4__6e130571d3414da6b1b99382f378ffea_grande.jpg
-17. Anun Classic Cabernet (250,000 ₫) - Chile. Đỏ dễ rót hằng ngày trái cây hiện đại. Phô mai BBQ. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-30-56__b_r8_s4__12c06c4dd64d4fa4981b8a5e95799fd7_grande.jpg
-18. Anun Reserva Cabernet (320,000 ₫) - Chile. Đỏ Chile thanh lịch nho đen thảo mộc. Thịt quay hầm. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-29-31__b_r8_s4__4ccb459bb4424342a303d6e216cc6cf2_grande.jpg
-19. Mari Gran Reserva Cabernet (480,000 ₫) - Chile. Đỏ cassis phức hợp sang trọng. Thịt đỏ gia vị. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-27-42__b_r8_s4__db1235d798ea4edf9d7c83114f3f64e5_grande.jpg
+14. Albino Armani Amarone D.O.C.G (1,600,000 ₫) - Ý. Đỏ nồng nàn sang trọng, quả đỏ. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-49-53__b_r8_s4__0f59fb694ee54c55ad802dd85a26f8b2_grande.jpg
+15. Folgore Appassimento IGT (1,150,000 ₫) - Ý. Đỏ đậm đà mạnh mẽ anh đào chín nhừ. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-31-51__b_r8_s4__66846d21168142f5ae7beae979cbf746_grande.jpg
+16. Masseria Doppio Passo Appassimento (640,000 ₫) - Ý. Đỏ đậm quyền lực cacao. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_15-06-41__b_r8_s4__6e130571d3414da6b1b99382f378ffea_grande.jpg
+17. Anun Classic Cabernet (250,000 ₫) - Chile. Đỏ dễ rót hằng ngày trái cây hiện đại. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-30-56__b_r8_s4__12c06c4dd64d4fa4981b8a5e95799fd7_grande.jpg
+18. Anun Reserva Cabernet (320,000 ₫) - Chile. Đỏ Chile thanh lịch nho đen mận chín thảo mộc. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-29-31__b_r8_s4__4ccb459bb4424342a303d6e216cc6cf2_grande.jpg
+19. Mari Gran Reserva Cabernet (480,000 ₫) - Chile. Đỏ cassis bạc hà phức hợp sang trọng. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-27-42__b_r8_s4__db1235d798ea4edf9d7c83114f3f64e5_grande.jpg
 20. Hax Cabernet Sauvignon (450,000 ₫) - Chile. Đỏ cân bằng tiêu vanilla. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-20-32__b_r8_s4__f11f42d4af47434b9c835705f1c2121d_grande.jpg
 21. Parajex Reservado Cabernet (250,000 ₫) - Chile. Đỏ thân mật mượt mà chocolate. Ảnh: http://cdn.hstatic.net/products/200001063449/2025-10-22_14-19-19__b_r8_s4__02bbd929e86f4daa8b2dacbbcc57dbd1_grande.jpg
-22. Velarino Susumaniello (430,000 ₫) - Ý. Đỏ đậm sánh mâm xôi quế cacao Ý. Hầm nướng đậm. Ảnh: http://cdn.hstatic.net/products/200001063449/_dang_instagram_quang_cao_khuyen_mai_do_uong_hien_dai_toi_gian_hong_do_f10f215630134f2a8114367795bb8187_grande.png
-23. Villa Oppi Barbaresco DOCG (1,670,000 ₫) - Ý. Đỏ garnet sâu thẳm sang trọng dâu rừng cam thảo. Truffle pasta. Ảnh: http://cdn.hstatic.net/products/200001063449/gemini_generated_image_7qmxo47qmxo47qmx_6fcc4cf6b0e0438d93a76674307886ff_grande.png
-24. Villa Oppi Amarone Della Valpolicella DOCG (2,320,000 ₫) - Ý. Đỏ thượng lưu đậm cực hạn mật ong khói. Tiệc lớn. Ảnh: http://cdn.hstatic.net/products/200001063449/gemini_generated_image_du95aldu95aldu95_a51007c8bf444a20821e4a60e63cc773_grande.png
+22. Velarino Susumaniello (430,000 ₫) - Ý. Đỏ đậm sánh mâm xôi quế cacao Ý. Ảnh: http://cdn.hstatic.net/products/200001063449/_dang_instagram_quang_cao_khuyen_mai_do_uong_hien_dai_toi_gian_hong_do_f10f215630134f2a8114367795bb8187_grande.png
+23. Villa Oppi Barbaresco DOCG (1,670,000 ₫) - Ý. Đỏ garnet sâu thẳm sang trọng dâu rừng. Ảnh: http://cdn.hstatic.net/products/200001063449/gemini_generated_image_7qmxo47qmxo47qmx_6fcc4cf6b0e0438d93a76674307886ff_grande.png
+24. Villa Oppi Amarone Della Valpolicella DOCG (2,320,000 ₫) - Ý. Đỏ thượng lưu đậm cực hạn, nho khô sung mật ong khói. Ảnh: http://cdn.hstatic.net/products/200001063449/gemini_generated_image_du95aldu95aldu95_a51007c8bf444a20821e4a60e63cc773_grande.png
 
 HÃY TIẾP NHẬN TOÀN BỘ NGỮ CẢNH CỦA KHÁCH HÀNG, ÁP DỤNG CÁC QUY TẮC TRÊN ĐỂ TƯ VẤN THẬT TINH TẾ VÀ SIÊU ĐẸP MẮT!
 `;
