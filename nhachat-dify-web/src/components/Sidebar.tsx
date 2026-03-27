@@ -18,13 +18,16 @@ export default function Sidebar({ sessions, currentSessionId, onNewChat, onSwitc
         className="flex items-center gap-4 mb-12 px-2 group cursor-pointer"
         onClick={onNewChat}
       >
-        <div className="w-14 h-14 rounded-2xl shadow-[0_12px_24px_-8px_rgba(155,28,49,0.4)] flex items-center justify-center overflow-hidden transform transition-all group-hover:scale-105 duration-500 border border-brand-gold/40 bg-[#801a2d] relative">
-          <div className="absolute inset-0 flex items-start justify-center pt-1.5 h-[140%]">
+        <div className="w-14 h-14 rounded-2xl shadow-[0_12px_24px_-8px_rgba(155,28,49,0.4)] overflow-hidden transform transition-all group-hover:scale-105 duration-500 border border-brand-gold/40 bg-[#801a2d] relative flex items-center justify-center">
+          <div className="w-[85%] h-[160%] relative">
             <img 
               src="/nha-chat-logo.png" 
               alt="Logo Icon" 
-              className="w-[85%] h-auto object-contain"
-              style={{ filter: 'brightness(1.1) contrast(1.1)' }}
+              className="w-full h-full object-contain object-top"
+              style={{ 
+                filter: 'brightness(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+                marginTop: '4px'
+              }}
             />
           </div>
         </div>
