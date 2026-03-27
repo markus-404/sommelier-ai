@@ -377,11 +377,6 @@ export default function ChatArea({
 
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-brand-cream via-brand-cream/90 to-transparent flex flex-col items-center gap-4 z-20 pointer-events-none">
         <div className="w-full max-w-3xl flex flex-col items-center gap-4 pointer-events-auto">
-          {messages.length > 0 && !isLoading && (
-            <div className="w-full animate-in slide-in-from-bottom-5 fade-in duration-500">
-               <SuggestedQuestions questions={HARDCODED_QUESTIONS} onSelect={handleSendMessage} />
-            </div>
-          )}
           <div className="flex gap-2 w-full justify-center">
               <button 
                   onClick={() => setShowPairingWizard(true)}
