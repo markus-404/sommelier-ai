@@ -54,23 +54,17 @@ export default function ChatArea({
   const scrollThreshold = 60; // Significant scroll needed to trigger change
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const currentScrollY = e.currentTarget.scrollTop;
-    const diff = currentScrollY - lastScrollTopRef.current;
-
-    // Only trigger if scroll is significant and not near the very top
-    if (Math.abs(diff) > scrollThreshold) {
-      if (diff < 0 && currentScrollY > 100) {
-        // Scrolling up -> hide suggestions
-        if (showSuggestions) setShowSuggestions(false);
-      } else if (diff > 0) {
-        // Scrolling down -> show suggestions
-        if (!showSuggestions) setShowSuggestions(true);
-      }
-      lastScrollTopRef.current = currentScrollY;
-    } else if (currentScrollY <= 50) {
-      // Always show when near the top
-      if (!showSuggestions) setShowSuggestions(true);
-      lastScrollTopRef.current = currentScrollY;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    
+    // Zone-based logic: Is the user near the bottom?
+    // We show suggestions if they are within 150px of the bottom.
+    // This is much more stable than direction-based detection.
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+    
+    if (isNearBottom && !showSuggestions) {
+      setShowSuggestions(true);
+    } else if (!isNearBottom && showSuggestions) {
+      setShowSuggestions(false);
     }
   };
 
