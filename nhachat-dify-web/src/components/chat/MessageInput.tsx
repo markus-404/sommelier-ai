@@ -47,7 +47,7 @@ export default function MessageInput({ onSendMessage, disabled, onStop }: Messag
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Hãy để Sommelier dẫn lối quý khách..."
+          placeholder="Bạn hỗ trợ gì về vang...?"
           className="w-full max-h-48 min-h-[44px] py-3 bg-transparent resize-none outline-none text-brand-text font-medium placeholder-[#a39485]/60 leading-relaxed text-[15px]"
           rows={1}
           disabled={disabled}
