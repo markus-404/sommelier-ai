@@ -15,27 +15,27 @@ export default function Sidebar({ sessions, currentSessionId, onNewChat, onSwitc
     <div className="flex flex-col h-full bg-brand-cream-sidebar border-r border-brand-border px-4 py-8">
       {/* Brand Identity */}
       <div 
-        className="flex items-center gap-4 mb-12 px-2 group cursor-pointer"
+        className="flex items-center gap-4 mb-14 px-1 group cursor-pointer"
         onClick={onNewChat}
       >
-        <div className="w-14 h-14 rounded-2xl shadow-[0_12px_24px_-8px_rgba(155,28,49,0.4)] overflow-hidden transform transition-all group-hover:scale-105 duration-500 border border-brand-gold/40 bg-[#801a2d] relative flex items-center justify-center">
-          <div className="w-[85%] h-[160%] relative">
-            <img 
-              src="/nha-chat-logo.png" 
-              alt="Logo Icon" 
-              className="w-full h-full object-contain object-top"
-              style={{ 
-                filter: 'brightness(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                marginTop: '4px'
-              }}
-            />
-          </div>
+        <div 
+          className="w-14 h-14 rounded-[1.25rem] shadow-[0_15px_30px_-8px_rgba(155,28,49,0.35)] transform transition-all duration-500 group-hover:scale-105 border border-brand-gold/30 relative"
+          style={{
+            backgroundColor: '#801a2d',
+            backgroundImage: 'url("/nha-chat-logo.png")',
+            backgroundSize: '220%',
+            backgroundPosition: 'center 15%',
+            backgroundRepeat: 'no-repeat'
+          }}
+        >
+          {/* Shine effect overlay */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-[1.25rem] opacity-40" />
         </div>
-        <div>
-          <h1 className="font-serif font-black text-2xl text-brand-red tracking-tight leading-none italic">
+        <div className="flex flex-col">
+          <h1 className="font-serif font-black text-[26px] text-brand-red tracking-tight leading-[1.1] italic drop-shadow-sm">
             Nhà Chát
           </h1>
-          <span className="block text-[10px] font-bold text-brand-gold uppercase tracking-[0.25em] mt-2 opacity-90">
+          <span className="block text-[11px] font-bold text-brand-gold uppercase tracking-[0.2em] mt-1 opacity-90 whitespace-nowrap">
             Elite Sommelier
           </span>
         </div>
