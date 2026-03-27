@@ -14,7 +14,7 @@ export interface WineProduct {
 
 export default function WineCard({ product }: { product: WineProduct }) {
   return (
-    <div className="relative w-full max-w-[450px] my-3 mx-auto bg-white overflow-hidden rounded-[1.5rem] shadow-[0_8px_30px_-5px_rgba(0,0,0,0.06)] hover:shadow-[0_15px_40px_-5px_rgba(155,28,49,0.12)] transition-all duration-300 group flex flex-row border border-[#f0e6da] h-[190px]">
+    <div className="relative w-full my-3 bg-white overflow-hidden rounded-[1.5rem] shadow-[0_4px_20px_-5px_rgba(0,0,0,0.06)] hover:shadow-[0_15px_40px_-5px_rgba(155,28,49,0.12)] transition-all duration-300 group flex flex-row border border-[#f0e6da] h-[190px]">
       
       {/* 40% Left Area: Image */}
       <div className="relative w-[40%] h-full bg-gradient-to-t from-[#fcfbf9] to-[#f4ebe1] p-3 flex flex-col items-center justify-center border-r border-[#f0e6da]/50 overflow-hidden shrink-0">
@@ -22,7 +22,7 @@ export default function WineCard({ product }: { product: WineProduct }) {
         
         <div className="absolute top-3 left-3 z-30 bg-white/95 backdrop-blur-md shadow-sm border border-[#eee5d8] text-brand-red text-[8px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
           <Sparkles size={8} className="text-brand-gold fill-brand-gold" />
-          <span className="hidden sm:inline">Trọn lọc</span>
+          <span className="hidden sm:inline">Chọn lọc</span>
         </div>
 
         <div className="relative z-10 w-full h-full flex items-center justify-center transform transition-transform duration-500 group-hover:scale-105">

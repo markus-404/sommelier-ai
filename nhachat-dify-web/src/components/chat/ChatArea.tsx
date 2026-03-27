@@ -354,11 +354,15 @@ export default function ChatArea({
                         messageId={msg.id} 
                         onFeedback={(id, rating, tags) => handleFeedback(id, rating, tags)} 
                       />
-                      {msg.productCards?.map((product, pIdx) => (
-                        <div key={pIdx} className="animate-in fade-in slide-in-from-left-4 duration-500 delay-200">
-                          <WineCard product={product} />
+                      {msg.productCards && msg.productCards.length > 0 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                          {msg.productCards.map((product, pIdx) => (
+                            <div key={pIdx} className="animate-in fade-in slide-in-from-left-4 duration-500 w-full" style={{ animationDelay: `${200 + pIdx * 100}ms` }}>
+                              <WineCard product={product} />
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
                   )}
                 </div>
