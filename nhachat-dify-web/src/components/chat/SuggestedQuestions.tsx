@@ -15,15 +15,12 @@ export default function SuggestedQuestions({ questions, onSelect }: SuggestedQue
         <MessageSquare size={12} />
         <span>Gợi ý cho bạn</span>
       </div>
-      <div className="flex overflow-x-auto gap-2 pb-2 snap-x whitespace-nowrap scrollbar-hide w-full" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <style>{`
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-        `}</style>
+      <div className="flex flex-wrap gap-2 w-full">
         {questions.map((question, index) => (
           <button
             key={index}
             onClick={() => onSelect(question)}
-            className="shrink-0 snap-start bg-white/90 backdrop-blur-sm hover:bg-white text-[#6b5850] border border-[#e6d8c8] px-4 py-[7px] rounded-full text-[13px] font-medium transition-all duration-300 hover:border-brand-gold hover:text-brand-red shadow-sm hover:shadow-md active:scale-95"
+            className="bg-white/90 backdrop-blur-sm hover:bg-white text-[#6b5850] border border-[#e6d8c8] px-4 py-[7px] rounded-full text-[13px] font-medium transition-all duration-300 hover:border-brand-gold hover:text-brand-red shadow-sm hover:shadow-md active:scale-95 whitespace-nowrap"
           >
             {question}
           </button>
