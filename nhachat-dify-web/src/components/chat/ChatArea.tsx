@@ -50,18 +50,28 @@ export default function ChatArea({
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [showSuggestions, setShowSuggestions] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollTopRef = useRef(0);
+  const scrollThreshold = 60; // Significant scroll needed to trigger change
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const currentScrollY = e.currentTarget.scrollTop;
-    if (currentScrollY < lastScrollY && currentScrollY > 150) {
-      // Scrolling up => Hide
-      setShowSuggestions(false);
-    } else if (currentScrollY > lastScrollY) {
-      // Scrolling down => Show
-      setShowSuggestions(true);
+    const diff = currentScrollY - lastScrollTopRef.current;
+
+    // Only trigger if scroll is significant and not near the very top
+    if (Math.abs(diff) > scrollThreshold) {
+      if (diff < 0 && currentScrollY > 100) {
+        // Scrolling up -> hide suggestions
+        if (showSuggestions) setShowSuggestions(false);
+      } else if (diff > 0) {
+        // Scrolling down -> show suggestions
+        if (!showSuggestions) setShowSuggestions(true);
+      }
+      lastScrollTopRef.current = currentScrollY;
+    } else if (currentScrollY <= 50) {
+      // Always show when near the top
+      if (!showSuggestions) setShowSuggestions(true);
+      lastScrollTopRef.current = currentScrollY;
     }
-    setLastScrollY(currentScrollY);
   };
 
   const messages = currentSession?.messages || [];
