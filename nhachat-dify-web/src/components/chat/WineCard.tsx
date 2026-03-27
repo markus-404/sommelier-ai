@@ -14,13 +14,13 @@ export interface WineProduct {
 
 export default function WineCard({ product }: { product: WineProduct }) {
   return (
-    <div className="relative w-full my-3 bg-white overflow-hidden rounded-[1.5rem] shadow-[0_4px_20px_-5px_rgba(0,0,0,0.06)] hover:shadow-[0_15px_40px_-5px_rgba(155,28,49,0.12)] transition-all duration-300 group flex flex-row border border-[#f0e6da] h-[190px]">
+    <div className="relative w-full my-3 bg-white overflow-hidden rounded-[1.5rem] shadow-[0_4px_20px_-5px_rgba(0,0,0,0.06)] hover:shadow-[0_15px_40px_-5px_rgba(111,24,26,0.12)] transition-all duration-300 group flex flex-row border border-[#f0e6da] h-[190px]">
       
       {/* 40% Left Area: Image */}
       <div className="relative w-[40%] h-full bg-gradient-to-t from-[#fcfbf9] to-[#f4ebe1] p-3 flex flex-col items-center justify-center border-r border-[#f0e6da]/50 overflow-hidden shrink-0">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] opacity-50 z-20 pointer-events-none" />
         
-        <div className="absolute top-3 left-3 z-30 bg-white/95 backdrop-blur-md shadow-sm border border-[#eee5d8] text-brand-red text-[8px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
+        <div className="absolute top-3 left-3 z-30 bg-white/95 backdrop-blur-md shadow-sm border border-brand-border text-brand-red text-[8px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
           <Sparkles size={8} className="text-brand-gold fill-brand-gold" />
           <span className="hidden sm:inline">Chọn lọc</span>
         </div>
@@ -76,7 +76,7 @@ export default function WineCard({ product }: { product: WineProduct }) {
           href={product.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 bg-gradient-to-br from-[#2a1b15] to-[#1f130f] text-white rounded-xl hover:from-[#9B1C31] hover:to-[#7a1424] hover:shadow-[0_5px_15px_-3px_rgba(155,28,49,0.3)] transition-all duration-300 active:scale-[0.98] group/btn"
+          className="mt-2 w-full flex items-center justify-center gap-1.5 py-2 bg-gradient-to-br from-brand-red to-brand-red-dark text-white rounded-xl hover:from-brand-red-light hover:to-brand-red hover:shadow-[0_5px_15px_-3px_rgba(111,24,26,0.3)] transition-all duration-300 active:scale-[0.98] group/btn"
         >
           <span className="text-[11px] font-bold tracking-wider uppercase">Chi tiết</span>
           <ExternalLink size={12} className="opacity-90 stroke-[2.5] transition-transform group-hover/btn:rotate-45" />

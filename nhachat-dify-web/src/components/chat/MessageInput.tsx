@@ -57,7 +57,7 @@ export default function MessageInput({ onSendMessage, disabled, onStop }: Messag
         {disabled && onStop ? (
           <button
             onClick={onStop}
-            className="p-3.5 rounded-full transition-all duration-500 transform active:scale-90 flex-shrink-0 bg-[#3d2c23] hover:bg-[#2a1b15] text-white shadow-xl flex items-center justify-center w-[46px] h-[46px]"
+            className="p-3.5 rounded-full transition-all duration-500 transform active:scale-90 flex-shrink-0 bg-brand-red-dark hover:bg-brand-red text-white shadow-xl flex items-center justify-center w-[46px] h-[46px]"
             title="Dừng phản hồi"
           >
             <div className="w-3.5 h-3.5 bg-white rounded-sm animate-pulse" />

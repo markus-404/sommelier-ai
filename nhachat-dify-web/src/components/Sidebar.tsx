@@ -21,7 +21,7 @@ export default function Sidebar({ sessions, currentSessionId, onNewChat, onSwitc
         <div 
           className="w-14 h-14 rounded-[1.25rem] shadow-[0_15px_30px_-8px_rgba(155,28,49,0.35)] transform transition-all duration-500 group-hover:scale-105 border border-brand-gold/30 relative"
           style={{
-            backgroundColor: '#801a2d',
+            backgroundColor: '#6F181A',
             backgroundImage: 'url("/nha-chat-logo.png")',
             backgroundSize: '220%',
             backgroundPosition: 'center 15%',
