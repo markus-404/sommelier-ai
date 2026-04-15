@@ -138,6 +138,7 @@ export async function POST(req: NextRequest) {
            systemInstruction: SOMMELIER_SYSTEM_PROMPT,
            generationConfig: {
              thinkingConfig: { thinkingBudget: 0 },
+             maxOutputTokens: 4096,
            } as any,
          });
          

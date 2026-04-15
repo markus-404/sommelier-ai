@@ -134,6 +134,10 @@ export default function ChatArea({
     }
     cleanContent = cleanContent.replace(productRegex, "");
 
+    // Hide any unclosed <product_card> tail during streaming (or on truncation)
+    // so partial JSON never renders as raw text in the message bubble.
+    cleanContent = cleanContent.replace(/<product_card>[\s\S]*$/, "");
+
     // Extract suggested questions (ignored from stream, we use hardcoded ones in the global UI)
     const questionsRegex = /<suggested_questions>([\s\S]*?)<\/suggested_questions>/g;
     cleanContent = cleanContent.replace(questionsRegex, "");
