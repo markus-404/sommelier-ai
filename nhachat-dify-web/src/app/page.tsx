@@ -43,12 +43,14 @@ export default function Home() {
     setIsLoaded(true);
   }, []);
 
-  // Save sessions to localStorage whenever they change
+  // Save sessions to localStorage whenever they change.
+  // Skipped while a response is streaming to avoid per-token JSON.stringify + setItem cost;
+  // the final state is committed when isLoading flips back to false.
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && !isLoading) {
       localStorage.setItem("nha-chat-sessions", JSON.stringify(sessions));
     }
-  }, [sessions, isLoaded]);
+  }, [sessions, isLoaded, isLoading]);
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || null;
 
