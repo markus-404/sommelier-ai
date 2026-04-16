@@ -105,9 +105,9 @@ export default function ChatArea({
     setUserProfile(profile);
     localStorage.setItem("nhat-chat-user-profile", JSON.stringify(profile));
     setShowProfileWizard(false);
-    
+
     // Auto send a welcome message based on profile
-    handleSendMessage(`Chào Sommelier, tôi thường dùng vang cho dịp ${profile.occasion}. Tôi thích vang ${profile.intensity} và ${profile.sweetness}. Hãy gợi ý cho tôi 1 chai vang phù hợp nhấté!`);
+    handleSendMessage(`Chào Sommelier, tôi thường dùng vang cho dịp ${profile.occasion}. Tôi thích vang ${profile.intensity} và ${profile.sweetness}. Hãy gợi ý cho tôi 1 chai vang phù hợp nhấté!`, "profile_welcome");
   };
 
   // Auto scroll to bottom
@@ -155,7 +155,7 @@ export default function ChatArea({
     setIsLoading(false);
   };
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, source: string = "direct") => {
     const userMsgId = Date.now().toString();
     const assistantMsgId = (Date.now() + 1).toString();
     
@@ -182,6 +182,7 @@ export default function ChatArea({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: text,
+          source,
           history: messages.map(m => ({ role: m.role, content: m.content })),
           conversationId: conversationId,
           user: "webapp-user",
@@ -263,7 +264,7 @@ export default function ChatArea({
     if (title === "Kết hợp Món ăn") {
         setShowPairingWizard(true);
     } else {
-        handleSendMessage(`Tư vấn cho tôi: ${title}`);
+        handleSendMessage(`Tư vấn cho tôi: ${title}`, "shortcut");
     }
   };
 
@@ -276,9 +277,9 @@ export default function ChatArea({
       {/* Wizards */}
       {showProfileWizard && <ProfileWizard onComplete={handleProfileComplete} />}
       {showPairingWizard && (
-        <PairingWizard 
-            onPair={(food) => { setShowPairingWizard(false); handleSendMessage(food); }} 
-            onClose={() => setShowPairingWizard(false)} 
+        <PairingWizard
+            onPair={(food) => { setShowPairingWizard(false); handleSendMessage(food, "pairing_wizard"); }}
+            onClose={() => setShowPairingWizard(false)}
         />
       )}
 
@@ -423,10 +424,13 @@ export default function ChatArea({
         <div className="w-full max-w-3xl flex flex-col items-center gap-2 pointer-events-auto relative">
           
           <div className={`w-full transition-all duration-500 overflow-hidden ${showSuggestions && messages.length > 0 && !isLoading ? 'max-h-[150px] opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-4'}`}>
-               <SuggestedQuestions questions={HARDCODED_QUESTIONS} onSelect={handleSendMessage} />
+               <SuggestedQuestions questions={HARDCODED_QUESTIONS} onSelect={(q) => handleSendMessage(q, "suggested_question")} />
           </div>
 
           <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} onStop={handleStop} />
+          <p className="text-[11px] text-brand-text-muted/70 text-center mt-1 px-4">
+            Cuộc trò chuyện có thể được ghi nhận để cải thiện chất lượng tư vấn.
+          </p>
         </div>
       </div>
     </div>

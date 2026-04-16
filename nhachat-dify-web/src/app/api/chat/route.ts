@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logQuestion } from "@/lib/log-question";
 
 const SOMMELIER_SYSTEM_PROMPT = `
 BẠN LÀ AI?
@@ -112,12 +113,25 @@ QUY TẮC PHỤ:
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, query, inputs, user, conversationId, history } = await req.json();
+    const { message, query, inputs, user, conversationId, history, source } = await req.json();
     const chatMessage = message || query;
 
     if (!chatMessage) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
+
+    logQuestion({
+      session_id: conversationId || null,
+      msg_num: (Array.isArray(history) ? history.length : 0) + 1,
+      question: chatMessage,
+      source: source || "direct",
+      has_profile: !!(inputs && Object.keys(inputs).length),
+      occasion: inputs?.user_occasion || "",
+      intensity: inputs?.user_intensity || "",
+      sweetness: inputs?.user_sweetness || "",
+      user_agent: req.headers.get("user-agent") || "",
+      referrer: req.headers.get("referer") || "",
+    });
 
     const apiKey = process.env.DIFY_API_KEY || process.env.NEXT_PUBLIC_DIFY_API_KEY;
     
