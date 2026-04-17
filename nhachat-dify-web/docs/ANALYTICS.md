@@ -11,7 +11,7 @@ Open the Neon SQL console via:
 |--------------|--------------|-------------------------------------------------------|
 | `id`         | bigserial    | row id                                                |
 | `created_at` | timestamptz  | when the question was received (UTC)                  |
-| `session_id` | text         | Dify/Gemini conversation id (null on first turn)      |
+| `session_id` | text         | Gemini conversation id (null on first turn)            |
 | `msg_num`    | int          | 1-indexed position of the message in its session      |
 | `question`   | text         | raw user input                                        |
 | `source`     | text         | `direct` · `shortcut` · `suggested_question` · `pairing_wizard` · `profile_welcome` |

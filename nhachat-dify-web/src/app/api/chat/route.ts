@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { logQuestion } from "@/lib/log-question";
 
 const SOMMELIER_SYSTEM_PROMPT = `
@@ -133,90 +134,62 @@ export async function POST(req: NextRequest) {
       referrer: req.headers.get("referer") || "",
     });
 
+    // TODO: rename env vars — legacy Dify naming, now holds Gemini key
     const apiKey = process.env.DIFY_API_KEY || process.env.NEXT_PUBLIC_DIFY_API_KEY;
-    
+
     if (!apiKey) {
       console.error("Critical: API Key is missing in environment variables.");
       return NextResponse.json({ error: "Hệ thống đang bảo trì. Vui lòng thử lại sau." }, { status: 500 });
     }
 
-    const apiUrl = process.env.DIFY_API_URL || "https://api.dify.ai/v1";
+    const genAI = new GoogleGenerativeAI(apiKey);
 
-    if (apiKey.startsWith("AIzaSy")) {
-       const { GoogleGenerativeAI } = await import("@google/generative-ai");
-       const genAI = new GoogleGenerativeAI(apiKey);
-       
-       try {
-         const model = genAI.getGenerativeModel({
-           model: "gemini-3-flash-preview",
-           systemInstruction: SOMMELIER_SYSTEM_PROMPT,
-           generationConfig: {
-             thinkingConfig: { thinkingBudget: 0 },
-             maxOutputTokens: 4096,
-           } as any,
-         });
-         
-         const formattedHistory: any[] = [];
-         let lastRole = null;
-         const historyToProcess = (history || []).slice(-10);
-         for (const msg of historyToProcess) {
-             if (!msg.content || msg.content.trim() === "") continue;
-             const role = msg.role === "assistant" ? "model" : "user";
-             
-             if (role === lastRole && formattedHistory.length > 0) {
-                 formattedHistory[formattedHistory.length - 1].parts[0].text += "\n\n" + msg.content;
-             } else {
-                 formattedHistory.push({ role, parts: [{ text: msg.content }] });
-                 lastRole = role;
-             }
-         }
-         
-         const chat = model.startChat({ history: formattedHistory });
-         const result = await chat.sendMessageStream(chatMessage);
-
-         const stream = new ReadableStream({
-           async start(controller) {
-             const encoder = new TextEncoder();
-             try {
-               for await (const chunk of result.stream) {
-                 const text = chunk.text();
-                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "message", answer: text, conversation_id: conversationId || "gemini" })}\n\n`));
-               }
-             } catch (e: any) {
-               console.error("Gemini stream error:", e);
-               const errorMsg = e.message || "Đã có lỗi xảy ra trong quá trình xử lý.";
-               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "error", message: "[Lỗi hệ thống]: " + errorMsg })}\n\n`));
-             } finally {
-               controller.close();
-             }
-           }
-         });
-
-         return new Response(stream, { headers: { "Content-Type": "text/event-stream" } });
-       } catch (error: any) {
-         console.error("Gemini Init Error:", error);
-         return NextResponse.json({ error: "[Gemini Error]: " + error.message }, { status: 500 });
-       }
-    }
-
-    const response = await fetch(`${apiUrl}/chat-messages`, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        inputs: inputs || {}, 
-        query: chatMessage, 
-        response_mode: "streaming", 
-        conversation_id: conversationId || "", 
-        user: user || "user" 
-      }),
+    const model = genAI.getGenerativeModel({
+      model: "gemini-3-flash-preview",
+      systemInstruction: SOMMELIER_SYSTEM_PROMPT,
+      generationConfig: {
+        thinkingConfig: { thinkingBudget: 0 },
+        maxOutputTokens: 4096,
+      } as any,
     });
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        return NextResponse.json({ error: errorData.message || "Dify API Error" }, { status: response.status });
+    const formattedHistory: any[] = [];
+    let lastRole = null;
+    const historyToProcess = (history || []).slice(-10);
+    for (const msg of historyToProcess) {
+        if (!msg.content || msg.content.trim() === "") continue;
+        const role = msg.role === "assistant" ? "model" : "user";
+
+        if (role === lastRole && formattedHistory.length > 0) {
+            formattedHistory[formattedHistory.length - 1].parts[0].text += "\n\n" + msg.content;
+        } else {
+            formattedHistory.push({ role, parts: [{ text: msg.content }] });
+            lastRole = role;
+        }
     }
 
-    return new Response(response.body, { headers: { "Content-Type": "text/event-stream" } });
+    const chat = model.startChat({ history: formattedHistory });
+    const result = await chat.sendMessageStream(chatMessage);
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+        try {
+          for await (const chunk of result.stream) {
+            const text = chunk.text();
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "message", answer: text, conversation_id: conversationId || "gemini" })}\n\n`));
+          }
+        } catch (e: any) {
+          console.error("Gemini stream error:", e);
+          const errorMsg = e.message || "Đã có lỗi xảy ra trong quá trình xử lý.";
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "error", message: "[Lỗi hệ thống]: " + errorMsg })}\n\n`));
+        } finally {
+          controller.close();
+        }
+      }
+    });
+
+    return new Response(stream, { headers: { "Content-Type": "text/event-stream" } });
   } catch (error: any) {
     console.error("API Route Error:", error);
     const errorMessage = error.message || "Internal Server Error";
