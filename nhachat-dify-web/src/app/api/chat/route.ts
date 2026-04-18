@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { FunctionDeclarationsTool } from "@google/generative-ai";
 import { logQuestion } from "@/lib/log-question";
+import type { ElicitationQuestion } from "@/types/chat";
 
 /**
  * Gemini function-call tool for structured elicitation.
@@ -299,6 +300,39 @@ QUY TẮC PHỤ:
 - Ưu tiên "Safe choice" và "Interesting choice".
 `;
 
+const VALID_QUESTION_TYPES = ["occasion", "pairing", "budget", "taste", "other"] as const;
+
+/**
+ * Validates the raw args object from a Gemini function call against the
+ * ElicitationQuestion schema. Returns a typed payload on success, null on failure.
+ */
+function validateElicitationPayload(args: object): ElicitationQuestion | null {
+  const a = args as Record<string, unknown>;
+  if (
+    typeof a.question !== "string" ||
+    !VALID_QUESTION_TYPES.includes(a.question_type as any) ||
+    !Array.isArray(a.options) ||
+    a.options.length < 2 ||
+    a.options.length > 5 ||
+    typeof a.allow_freeform !== "boolean" ||
+    typeof a.skippable !== "boolean"
+  ) {
+    return null;
+  }
+  for (const opt of a.options) {
+    if (typeof (opt as any).label !== "string" || typeof (opt as any).value !== "string") {
+      return null;
+    }
+  }
+  return {
+    question: a.question as string,
+    question_type: a.question_type as ElicitationQuestion["question_type"],
+    options: (a.options as Array<{ label: string; value: string }>),
+    allow_freeform: a.allow_freeform as boolean,
+    skippable: a.skippable as boolean,
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { message, query, inputs, user, conversationId, history, source } = await req.json();
@@ -324,8 +358,9 @@ export async function POST(req: NextRequest) {
     // TODO: rename env vars — legacy Dify naming, now holds Gemini key
     const apiKey = process.env.DIFY_API_KEY || process.env.NEXT_PUBLIC_DIFY_API_KEY;
 
-    // Feature flag — wired in Chunk B. When "true", ELICITATION_TOOL is passed to the model.
-    // const functionCallElicitationEnabled = process.env.ENABLE_FUNCTION_CALL_ELICITATION === "true";
+    // Feature flag: set ENABLE_FUNCTION_CALL_ELICITATION="true" to enable elicitation cards.
+    // Default is off — V2.6 prose-only behaviour.
+    const functionCallElicitationEnabled = process.env.ENABLE_FUNCTION_CALL_ELICITATION === "true";
 
     if (!apiKey) {
       console.error("Critical: API Key is missing in environment variables.");
@@ -337,6 +372,7 @@ export async function POST(req: NextRequest) {
     const model = genAI.getGenerativeModel({
       model: "gemini-3-flash-preview",
       systemInstruction: SOMMELIER_SYSTEM_PROMPT,
+      ...(functionCallElicitationEnabled ? { tools: [ELICITATION_TOOL] } : {}),
       generationConfig: {
         thinkingConfig: { thinkingBudget: 0 },
         maxOutputTokens: 4096,
@@ -366,8 +402,35 @@ export async function POST(req: NextRequest) {
         const encoder = new TextEncoder();
         try {
           for await (const chunk of result.stream) {
-            const text = chunk.text();
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "message", answer: text, conversation_id: conversationId || "gemini" })}\n\n`));
+            if (functionCallElicitationEnabled) {
+              // Detect function calls emitted by the model in this chunk.
+              const fcs = chunk.functionCalls();
+              if (fcs && fcs.length > 0) {
+                for (const fc of fcs) {
+                  if (fc.name !== "ask_elicitation_question") {
+                    console.warn(`[elicitation] Unexpected function call: ${fc.name} — ignoring`);
+                    continue;
+                  }
+                  const payload = validateElicitationPayload(fc.args);
+                  if (!payload) {
+                    console.error("[elicitation] Invalid payload, skipping:", JSON.stringify(fc.args));
+                    continue;
+                  }
+                  controller.enqueue(encoder.encode(
+                    `data: ${JSON.stringify({ event: "elicitation_question", payload, conversation_id: conversationId || "gemini" })}\n\n`
+                  ));
+                }
+              }
+              // Emit text only when there is actual content (function-call chunks have empty text).
+              const text = chunk.text();
+              if (text) {
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "message", answer: text, conversation_id: conversationId || "gemini" })}\n\n`));
+              }
+            } else {
+              // Flag off: identical to pre-Chunk-B behaviour.
+              const text = chunk.text();
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event: "message", answer: text, conversation_id: conversationId || "gemini" })}\n\n`));
+            }
           }
         } catch (e: any) {
           console.error("Gemini stream error:", e);
