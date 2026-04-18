@@ -1,12 +1,31 @@
 import { WineProduct } from "@/components/chat/WineCard";
 
-export interface Message {
+/** Regular user or assistant text message. */
+export interface TextMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   productCards?: WineProduct[];
   suggestedQuestions?: string[];
 }
+
+/**
+ * Elicitation card — a UI-only message rendered in the assistant's column.
+ * Never sent to the backend as part of conversation history.
+ * The user's answer (if any) is submitted as a separate user TextMessage turn.
+ */
+export interface ElicitationMessage {
+  id: string;
+  role: "elicitation";
+  payload: ElicitationQuestion;
+  /** True once the user taps an option, submits freeform, or taps skip. */
+  answered: boolean;
+  /** The value/text the user selected, or "[skipped]" for skip. */
+  answer?: string;
+}
+
+/** Discriminated union of all message shapes in the conversation. */
+export type Message = TextMessage | ElicitationMessage;
 
 /** One selectable option inside an elicitation card. */
 export interface ElicitationOption {
@@ -18,8 +37,8 @@ export interface ElicitationOption {
 
 /**
  * Structured payload emitted by the model when it calls `ask_elicitation_question`.
- * Chunk B will parse this from the Gemini function-call response and pass it to the UI.
- * Chunks C/D will render it as an interactive card.
+ * Chunk B parses this from the Gemini function-call response.
+ * Chunk C renders it. Chunk D wires the submit callbacks.
  */
 export interface ElicitationQuestion {
   /** User-facing question text. 1 sentence. Must match the user's language. */
