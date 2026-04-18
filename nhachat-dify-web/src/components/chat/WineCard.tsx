@@ -10,6 +10,9 @@ export interface WineProduct {
   origin?: string;
   pairings?: string[];
   link: string;
+  /** Personalised 1-sentence reason this wine fits THIS user's stated context.
+   *  Required on final recommendation cards (BƯỚC 3). Omit on preview cards. */
+  reasoning?: string;
 }
 
 export default function WineCard({ product }: { product: WineProduct }) {

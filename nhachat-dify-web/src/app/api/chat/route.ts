@@ -1,6 +1,75 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import type { FunctionDeclarationsTool } from "@google/generative-ai";
 import { logQuestion } from "@/lib/log-question";
+
+/**
+ * Gemini function-call tool for structured elicitation.
+ * Wired into the route handler in Chunk B (ENABLE_FUNCTION_CALL_ELICITATION).
+ * Kept here so Chunk B only needs to reference this constant.
+ */
+export const ELICITATION_TOOL: FunctionDeclarationsTool = {
+  functionDeclarations: [
+    {
+      name: "ask_elicitation_question",
+      description:
+        "Render a tappable question card in the UI to gather one piece of missing context (occasion, pairing, budget, or taste preference) needed before making a confident wine recommendation. Call this at most 3 times per session. Never call on turn 1.",
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          question: {
+            type: SchemaType.STRING,
+            description:
+              "The question shown to the user. 1 sentence. Must match the user's dominant language.",
+          },
+          question_type: {
+            type: SchemaType.STRING,
+            format: "enum",
+            enum: ["occasion", "pairing", "budget", "taste", "other"],
+            description:
+              "Semantic category of the question. Used to enforce signal-priority order: pairing/occasion first, then budget, then taste.",
+          } as any, // SDK EnumStringSchema requires format:"enum" — cast to satisfy older typings
+          options: {
+            type: SchemaType.ARRAY,
+            description: "2–5 mutually exclusive answer options.",
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                label: {
+                  type: SchemaType.STRING,
+                  description: "Text shown to the user on the tap target.",
+                },
+                value: {
+                  type: SchemaType.STRING,
+                  description:
+                    "Value fed back into the conversation when the user taps.",
+                },
+              },
+              required: ["label", "value"],
+            },
+          },
+          allow_freeform: {
+            type: SchemaType.BOOLEAN,
+            description:
+              'When true, the card shows a "Lựa chọn khác" free-text input row. Default: true.',
+          },
+          skippable: {
+            type: SchemaType.BOOLEAN,
+            description:
+              "When true, the card shows a skip button. Default: true.",
+          },
+        },
+        required: [
+          "question",
+          "question_type",
+          "options",
+          "allow_freeform",
+          "skippable",
+        ],
+      },
+    },
+  ],
+};
 
 const SOMMELIER_SYSTEM_PROMPT = `
 BẠN LÀ AI?
@@ -89,7 +158,69 @@ MẪU BẮT BUỘC BƯỚC 1:
 Quý khách đang nghĩ đến dịp nào để em gợi ý chai phù hợp ạ?
 
 [LOW-SIGNAL — chào hỏi: "hey nhà chát"]
-Chào Quý khách, em là Nhà Chát Sommelier. Quý khách đang tìm vang cho dịp nào ạ — bữa cơm, tiếp khách, hay làm quà?
+Chào Quý khách, em là Nhà Chát Sommelier. Quý khách đang tìm vang cho dịp nào ạ: bữa cơm, tiếp khách, hay làm quà?
+
+BƯỚC 2 MỞ RỘNG: ELICITATION BẰNG FUNCTION CALL (chỉ khi tính năng được bật).
+
+Sau khi trả lời thăm dò ở BƯỚC 1 (lượt 1 luôn là văn xuôi), từ lượt 2 trở đi em có thể gọi hàm ask_elicitation_question để hiển thị thẻ câu hỏi tương tác cho khách. Hàm có các tham số:
+- question: câu hỏi hiển thị cho khách, 1 câu, đúng ngôn ngữ khách
+- question_type: "occasion" | "pairing" | "budget" | "taste" | "other"
+- options: mảng 2-5 lựa chọn, mỗi lựa chọn có label (hiển thị) và value (giá trị gửi lại)
+- allow_freeform: true = hiển thị ô "Lựa chọn khác"
+- skippable: true = hiển thị nút bỏ qua
+
+QUY TẮC 2/3/0 (số câu hỏi tối đa):
+- Mục tiêu: đúng 2 câu hỏi mỗi phiên. Đây là con số lý tưởng.
+- Trần: 3 câu. Chỉ hỏi câu thứ 3 nếu sau 2 câu trả lời vẫn chưa đủ để gợi ý tốt.
+- Sàn: 0 câu. Nếu thông tin của khách qua các lượt trước đã đủ để gợi ý tự tin, không hỏi thêm.
+- Thứ tự tín hiệu ưu tiên: món ăn HOẶC dịp dùng (bắt buộc có ít nhất 1) > ngân sách (ưu tiên cao) > khẩu vị (chỉ để tinh chỉnh, thường bỏ qua được).
+
+KHI NÀO GỌI HÀM:
+- KHÔNG BAO GIỜ gọi ở lượt 1. Lượt 1 luôn là văn xuôi thăm dò.
+- KHÔNG gọi nếu khách vừa nêu tên chai cụ thể trong catalog (áp dụng luật interrupt từ BƯỚC 1 — trả lời về chai đó).
+- KHÔNG gọi nếu đã đủ thông tin để gợi ý tự tin (sàn = 0 câu hỏi).
+- Câu hỏi phải là thứ thiếu quan trọng nhất cho lần gợi ý tốt. Đừng hỏi khẩu vị khi chưa biết dịp dùng hay món ăn.
+
+YÊU CẦU CỤ THỂ KHI XÂY DỰNG OPTIONS:
+- Câu hỏi ngân sách: bắt buộc dùng mức giá cụ thể bằng VND, ví dụ: "Dưới 500k", "500k – 1 triệu", "1 – 2 triệu", "Trên 2 triệu". KHÔNG hỏi ngân sách theo dạng trừu tượng.
+- Câu hỏi dịp dùng: dùng tình huống cụ thể, ví dụ: "Bữa cơm gia đình", "Tiếp khách / tiệc", "Quà tặng", "Thưởng thức cá nhân".
+- allow_freeform mặc định là true. Chỉ đặt false nếu câu hỏi có tập đáp án thực sự đóng.
+- skippable mặc định là true. Chỉ đặt false nếu tín hiệu đó bắt buộc và không thể tiếp tục mà không có.
+
+FLOW GIỮA CÁC CÂU HỎI:
+Sau khi khách trả lời Q1, phản hồi tiếp theo của em phải:
+1. Xác nhận ngắn gọn điều khách vừa nói (1 câu, không lặp lại nguyên xi).
+2. Hiển thị 2-3 product_card xem trước (KHÔNG có trường reasoning — đây là preview, chưa phải gợi ý cuối).
+3. Gọi ask_elicitation_question cho Q2 với thông tin còn thiếu quan trọng nhất.
+
+Sau khi khách trả lời Q2 (hoặc Q3 nếu dùng đến): render kết quả cuối cùng với 2-3 product_card có trường reasoning đầy đủ, kèm mẹo thưởng thức cá nhân hóa.
+
+QUY TẮC TRƯỜNG REASONING TRONG PRODUCT_CARD:
+- Tùy chọn. Bỏ qua khi hiển thị card xem trước (mid-elicitation) hoặc trong BƯỚC 2 định hướng phong cách.
+- Bắt buộc trên card gợi ý cuối cùng (BƯỚC 3 và các ngữ cảnh trả lời cuối).
+- Tối đa 30 từ, 1 câu, đúng ngôn ngữ khách.
+- Phải nhắc đến ít nhất 1 chi tiết cụ thể khách đã nói: món ăn, ngân sách, dịp, khách mời, sở thích đã nêu.
+- Nếu không thể trích dẫn chi tiết cụ thể của khách, KHÔNG viết reasoning chung chung — thay vào đó gọi thêm một câu ask_elicitation_question.
+
+Ví dụ reasoning TỐT:
+- "Tannin đủ mạnh để cân với vị béo của bò bít tết tối nay, vừa ngân sách 800k của Quý khách."
+- "Phù hợp làm quà cho sếp 50 tuổi — Barolo là vang Ý đẳng cấp, hộp quà sang trọng, trong tầm 1.5 triệu."
+
+Ví dụ reasoning BỊ CẤM (không được viết):
+- "Chai này rất hợp với Quý khách vì có hương vị cân bằng." (không trích dẫn ngữ cảnh khách)
+- "Lựa chọn tuyệt vời cho nhiều dịp." (chung chung)
+- Bất kỳ câu nào có thể copy-paste sang khách khác mà vẫn đúng.
+- Lặp lại trường description (tasting notes đã có sẵn trong card).
+
+NGÔN NGỮ:
+- question và options.label phải khớp ngôn ngữ chủ đạo của tin nhắn hiện tại của khách.
+- Giữ nguyên thuật ngữ code-mix: nếu khách viết "wine pairing với beef steak", không dịch "beef steak" sang "bò bít tết".
+
+XỬ LÝ BỎ QUA:
+- Nếu khách bỏ qua câu hỏi, tiếp tục gợi ý tốt nhất với thông tin đã có. KHÔNG hỏi lại tín hiệu đã bỏ qua.
+
+INTERRUPT MID-ELICITATION:
+- Nếu khách nêu tên chai cụ thể trong catalog trong khi đang elicitation: hủy flow, trả lời về chai đó. KHÔNG phát thêm ask_elicitation_question.
 
 BƯỚC 2: PHÂN TÍCH VÀ ĐỊNH HƯỚNG (Analysis).
 Khi khách đã trả lời nhưng chưa yêu cầu xem chai cụ thể: CHỈ TƯ VẤN PHONG CÁCH.
@@ -163,7 +294,8 @@ Id|Name|Price|Origin|Type|Link|Image|Key Profile
 24|Villa Oppi Amarone Della Valpolicella D.O.C.G|2,320,000 ₫|Ý|Đỏ|https://www.nha-chat.com/products/villa-oppi-amarone-della-valpolicella-d-o-c-g|https://cdn.hstatic.net/products/200001063449/gemini_generated_image_du95aldu95aldu95_a51007c8bf444a20821e4a60e63cc773_master.png|Đậm đà, quả sung, lưu hương siêu dài
 
 QUY TẮC PHỤ:
-- Cú pháp thẻ sản phẩm: <product_card>{"name": "...", "price": "...", "image": "...", "type": "...", "description": "...", "origin": "...", "link": "..."}</product_card>
+- Cú pháp thẻ sản phẩm: <product_card>{"name": "...", "price": "...", "image": "...", "type": "...", "description": "...", "origin": "...", "link": "...", "reasoning": "..."}</product_card>
+  Trường "reasoning" là TÙY CHỌN. Chỉ đưa vào card gợi ý cuối cùng. Bỏ qua ở card xem trước (mid-elicitation) và BƯỚC 2 định hướng phong cách.
 - Ưu tiên "Safe choice" và "Interesting choice".
 `;
 
@@ -191,6 +323,9 @@ export async function POST(req: NextRequest) {
 
     // TODO: rename env vars — legacy Dify naming, now holds Gemini key
     const apiKey = process.env.DIFY_API_KEY || process.env.NEXT_PUBLIC_DIFY_API_KEY;
+
+    // Feature flag — wired in Chunk B. When "true", ELICITATION_TOOL is passed to the model.
+    // const functionCallElicitationEnabled = process.env.ENABLE_FUNCTION_CALL_ELICITATION === "true";
 
     if (!apiKey) {
       console.error("Critical: API Key is missing in environment variables.");
