@@ -483,30 +483,8 @@ export default function ChatArea({
           ) : (
             <div className="flex flex-col gap-6 w-full pb-48">
               {messages.map((msg, idx) => {
-                // ── Elicitation card ──────────────────────────────────────────
-                if (isElicitation(msg)) {
-                  return (
-                    <div
-                      key={msg.id}
-                      className="flex w-full gap-4 md:gap-6 flex-row animate-in fade-in slide-in-from-bottom-2 duration-500"
-                      style={{ animationDelay: `${idx * 0.1}s` }}
-                    >
-                      {/* Same avatar as assistant */}
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg wine-gradient text-white">
-                        <Wine size={22} />
-                      </div>
-                      <div className="flex flex-col gap-2 max-w-[85%] md:max-w-[75%] w-full">
-                        <ElicitationCard
-                          payload={msg.payload}
-                          disabled={msg.answered}
-                          onSelect={(value) => handleElicitationSelect(msg.id, value)}
-                          onFreeform={(text) => handleElicitationFreeform(msg.id, text)}
-                          onSkip={() => handleElicitationSkip(msg.id)}
-                        />
-                      </div>
-                    </div>
-                  );
-                }
+                // Elicitation messages are rendered in the bottom input area — skip here
+                if (isElicitation(msg)) return null;
 
                 // ── Regular user / assistant message ──────────────────────────
                 return (
@@ -535,7 +513,7 @@ export default function ChatArea({
                                 <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
                           ) : (
-                            <div className="prose prose-brand prose-slate dark:prose-invert max-w-none prose-p:my-1 prose-headings:text-brand-red prose-strong:text-brand-red prose-a:text-brand-gold prose-a:font-bold prose-ul:list-disc">
+                            <div className="prose prose-brand prose-slate dark:prose-invert max-w-none prose-p:mb-3 prose-headings:text-brand-red prose-strong:text-brand-red prose-a:text-brand-gold prose-a:font-bold prose-ul:list-disc prose-li:my-1">
                               <ReactMarkdown
                                 components={{
                                   a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:decoration-brand-red transition-all" />,
@@ -576,19 +554,30 @@ export default function ChatArea({
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 md:px-8 md:py-6 bg-gradient-to-t from-brand-cream via-brand-cream/95 to-transparent flex flex-col items-center gap-2 z-20 pointer-events-none">
-        <div className="w-full max-w-3xl flex flex-col items-center gap-2 pointer-events-auto relative">
-
-          <div className={`w-full transition-all duration-500 overflow-hidden ${showSuggestions && messages.length > 0 && !isLoading ? 'max-h-[150px] opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-4'}`}>
-               <SuggestedQuestions questions={HARDCODED_QUESTIONS} onSelect={(q) => handleSendMessage(q, "suggested_question")} />
+      {(() => {
+        const pendingElicitation = messages.find(m => isElicitation(m) && !(m as ElicitationMessage).answered) as ElicitationMessage | undefined;
+        return (
+          <div className="absolute bottom-0 left-0 right-0 p-4 md:px-8 md:py-6 bg-gradient-to-t from-brand-cream via-brand-cream/95 to-transparent flex flex-col items-center gap-2 z-20 pointer-events-none">
+            <div className="w-full max-w-3xl flex flex-col items-center gap-2 pointer-events-auto relative">
+              {pendingElicitation && !isLoading ? (
+                <ElicitationCard
+                  payload={pendingElicitation.payload}
+                  disabled={false}
+                  onSelect={(value) => handleElicitationSelect(pendingElicitation.id, value)}
+                  onFreeform={(text) => handleElicitationFreeform(pendingElicitation.id, text)}
+                  onSkip={() => handleElicitationSkip(pendingElicitation.id)}
+                  className="rounded-3xl shadow-lg"
+                />
+              ) : (
+                <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} onStop={handleStop} />
+              )}
+              <p className="text-[11px] text-brand-text-muted/70 text-center mt-1 px-4">
+                Cuộc trò chuyện có thể được ghi nhận để cải thiện chất lượng tư vấn.
+              </p>
+            </div>
           </div>
-
-          <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} onStop={handleStop} />
-          <p className="text-[11px] text-brand-text-muted/70 text-center mt-1 px-4">
-            Cuộc trò chuyện có thể được ghi nhận để cải thiện chất lượng tư vấn.
-          </p>
-        </div>
-      </div>
+        );
+      })()}
     </div>
   );
 }

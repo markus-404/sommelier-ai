@@ -10,6 +10,7 @@ interface ElicitationCardProps {
   onFreeform: (text: string) => void;
   onSkip: () => void;
   disabled?: boolean;
+  className?: string;
 }
 
 export default function ElicitationCard({
@@ -18,6 +19,7 @@ export default function ElicitationCard({
   onFreeform,
   onSkip,
   disabled = false,
+  className = "",
 }: ElicitationCardProps) {
   const [submitted, setSubmitted] = useState(false);
   const [freeformText, setFreeformText] = useState("");
@@ -54,9 +56,9 @@ export default function ElicitationCard({
 
   return (
     <div
-      className={`w-full bg-white border border-brand-border rounded-3xl rounded-tl-none wine-card-shadow overflow-hidden transition-opacity duration-300 ${
+      className={`w-full bg-white border border-brand-border rounded-3xl wine-card-shadow overflow-hidden transition-opacity duration-300 ${
         isLocked ? "opacity-50 pointer-events-none" : ""
-      }`}
+      } ${className}`}
     >
       {/* Question */}
       <div className="px-5 pt-5 pb-4">
