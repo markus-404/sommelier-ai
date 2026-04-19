@@ -1,3 +1,16 @@
+/**
+ * CHANGELOG
+ * ---------
+ * V2.6 (2026-04-17): Exploratory-first BƯỚC 1 with HIGH/MEDIUM/LOW signal taxonomy.
+ *   Warm short responses for low/medium signals; product cards only on high-signal turns.
+ *   Prompt change only — no new env vars or components.
+ *
+ * V2.7 (2026-04-19): Structured elicitation via Gemini function calling.
+ *   Feature-flagged behind ENABLE_FUNCTION_CALL_ELICITATION=true (default: false).
+ *   New: ELICITATION_TOOL, ask_elicitation_question function, elicitation SSE events,
+ *   ElicitationCard UI component, discriminated Message union (types/chat.ts).
+ *   New Neon sources: elicitation_option, elicitation_freeform, elicitation_skip.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import type { FunctionDeclarationsTool } from "@google/generative-ai";

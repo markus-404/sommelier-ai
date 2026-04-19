@@ -14,7 +14,7 @@ Open the Neon SQL console via:
 | `session_id` | text         | Gemini conversation id (null on first turn)            |
 | `msg_num`    | int          | 1-indexed position of the message in its session      |
 | `question`   | text         | raw user input                                        |
-| `source`     | text         | `direct` · `shortcut` · `suggested_question` · `pairing_wizard` · `profile_welcome` |
+| `source`     | text         | `direct` · `shortcut` · `suggested_question` · `pairing_wizard` · `profile_welcome` · `elicitation_option` · `elicitation_freeform` · `elicitation_skip` |
 | `has_profile`| boolean      | user completed the gu/profile wizard                  |
 | `occasion`   | text         | profile: dịp dùng                                     |
 | `intensity`  | text         | profile: đậm/nhạt                                     |
@@ -104,6 +104,94 @@ FROM questions
 WHERE created_at > NOW() - INTERVAL '30 days'
 GROUP BY day
 ORDER BY day DESC;
+```
+
+## Elicitation analytics (V2.7)
+
+These queries work against the current schema. Note: `question_type` is not a logged column — skip-rate by question type requires a schema migration (see "Adding a column later" below) and a change to `log-question.ts`.
+
+### Elicitation engagement: skip vs. answer rate
+
+```sql
+SELECT
+  source,
+  COUNT(*) AS events,
+  ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 1) AS pct
+FROM questions
+WHERE source IN ('elicitation_option', 'elicitation_freeform', 'elicitation_skip')
+  AND created_at > NOW() - INTERVAL '30 days'
+GROUP BY source
+ORDER BY events DESC;
+```
+
+### Freeform vs. option split
+
+```sql
+SELECT
+  source,
+  COUNT(*) AS events
+FROM questions
+WHERE source IN ('elicitation_option', 'elicitation_freeform')
+  AND created_at > NOW() - INTERVAL '30 days'
+GROUP BY source;
+```
+
+### Average elicitation turns per session
+
+Counts how many times a session interacted with an elicitation card (option taps + freeform + skips).
+
+```sql
+SELECT
+  session_id,
+  COUNT(*) AS elicitation_turns
+FROM questions
+WHERE source IN ('elicitation_option', 'elicitation_freeform', 'elicitation_skip')
+  AND session_id IS NOT NULL
+  AND created_at > NOW() - INTERVAL '30 days'
+GROUP BY session_id
+ORDER BY elicitation_turns DESC;
+```
+
+### Elicitation completion rate
+
+Sessions that engaged with at least one elicitation card (answered OR skipped) vs. sessions that only used direct/shortcut sources. A session counts as "started elicitation" if any elicitation source row exists.
+
+```sql
+SELECT
+  CASE WHEN elicitation_sessions.session_id IS NOT NULL THEN 'used elicitation' ELSE 'no elicitation' END AS cohort,
+  COUNT(DISTINCT all_sessions.session_id) AS sessions
+FROM (
+  SELECT DISTINCT session_id FROM questions
+  WHERE session_id IS NOT NULL
+    AND created_at > NOW() - INTERVAL '30 days'
+) AS all_sessions
+LEFT JOIN (
+  SELECT DISTINCT session_id FROM questions
+  WHERE source IN ('elicitation_option', 'elicitation_freeform', 'elicitation_skip')
+    AND session_id IS NOT NULL
+    AND created_at > NOW() - INTERVAL '30 days'
+) AS elicitation_sessions USING (session_id)
+GROUP BY cohort;
+```
+
+### Skip-rate-by-question-type (requires migration — not yet available)
+
+To enable this, add the `question_type` column:
+
+```sql
+ALTER TABLE questions ADD COLUMN elicitation_question_type TEXT;
+```
+
+Then update `src/lib/log-question.ts` to accept and persist `elicitation_question_type` when `source` is an elicitation source. Once data flows, query:
+
+```sql
+-- Run after migration + deploy
+SELECT elicitation_question_type, source, COUNT(*) AS events
+FROM questions
+WHERE source IN ('elicitation_option', 'elicitation_freeform', 'elicitation_skip')
+  AND elicitation_question_type IS NOT NULL
+GROUP BY elicitation_question_type, source
+ORDER BY elicitation_question_type, source;
 ```
 
 ## Export
