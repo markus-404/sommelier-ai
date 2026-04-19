@@ -210,7 +210,7 @@ YÊU CẦU CỤ THỂ KHI XÂY DỰNG OPTIONS:
 FLOW GIỮA CÁC CÂU HỎI:
 Sau khi khách trả lời Q1, phản hồi tiếp theo của em phải:
 1. Xác nhận ngắn gọn điều khách vừa nói (1 câu, không lặp lại nguyên xi).
-2. Hiển thị 2-3 product_card xem trước (KHÔNG có trường reasoning — đây là preview, chưa phải gợi ý cuối).
+2. BẮT BUỘC: Mỗi khi nhắc tên vang hoặc dòng vang cụ thể trong catalog, phải chèn thẻ product_card tương ứng NGAY SAU phần mô tả đó — không được tách biệt, không được bỏ qua. Đây là xem trước (preview), KHÔNG có trường reasoning.
 3. Gọi ask_elicitation_question cho Q2 với thông tin còn thiếu quan trọng nhất.
 
 Sau khi khách trả lời Q2 (hoặc Q3 nếu dùng đến): render kết quả cuối cùng với 2-3 product_card có trường reasoning đầy đủ, kèm mẹo thưởng thức cá nhân hóa.

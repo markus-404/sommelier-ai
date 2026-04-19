@@ -6,7 +6,7 @@ import type { ElicitationQuestion } from "@/types/chat";
 
 interface ElicitationCardProps {
   payload: ElicitationQuestion;
-  onSelect: (value: string) => void;
+  onSelect: (value: string, label: string) => void;
   onFreeform: (text: string) => void;
   onSkip: () => void;
   disabled?: boolean;
@@ -27,10 +27,10 @@ export default function ElicitationCard({
 
   const isLocked = submitted || disabled;
 
-  const handleSelect = (value: string) => {
+  const handleSelect = (value: string, label: string) => {
     if (isLocked) return;
     setSubmitted(true);
-    onSelect(value);
+    onSelect(value, label);
   };
 
   const handleFreeformSubmit = () => {
@@ -74,11 +74,11 @@ export default function ElicitationCard({
             key={opt.value}
             role="button"
             tabIndex={isLocked ? -1 : 0}
-            onClick={() => handleSelect(opt.value)}
+            onClick={() => handleSelect(opt.value, opt.label)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                handleSelect(opt.value);
+                handleSelect(opt.value, opt.label);
               }
             }}
             disabled={isLocked}

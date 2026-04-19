@@ -347,18 +347,18 @@ export default function ChatArea({
   // Elicitation submit handlers
   // ---------------------------------------------------------------------------
 
-  const handleElicitationSelect = (elicitationMsgId: string, value: string) => {
-    // Mark the card as answered in state
+  const handleElicitationSelect = (elicitationMsgId: string, value: string, label: string) => {
+    // Mark the card as answered in state — store the display label
     const updatedMessages = messages.map((m): Message =>
       m.id === elicitationMsgId && isElicitation(m)
-        ? { ...m, answered: true, answer: value }
+        ? { ...m, answered: true, answer: label }
         : m
     );
     if (currentSession?.id) {
       onUpdateSession(currentSession.id, { messages: updatedMessages });
     }
-    // Submit the value as the next user turn
-    handleSendMessage(value, "elicitation_option");
+    // Submit the label as the next user turn — readable by both user and model
+    handleSendMessage(label, "elicitation_option");
   };
 
   const handleElicitationFreeform = (elicitationMsgId: string, text: string) => {
@@ -513,7 +513,7 @@ export default function ChatArea({
                                 <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
                           ) : (
-                            <div className="prose prose-brand prose-slate dark:prose-invert max-w-none prose-p:mb-3 prose-headings:text-brand-red prose-strong:text-brand-red prose-a:text-brand-gold prose-a:font-bold prose-ul:list-disc prose-li:my-1">
+                            <div className="markdown-content">
                               <ReactMarkdown
                                 components={{
                                   a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-4 hover:decoration-brand-red transition-all" />,
@@ -563,7 +563,7 @@ export default function ChatArea({
                 <ElicitationCard
                   payload={pendingElicitation.payload}
                   disabled={false}
-                  onSelect={(value) => handleElicitationSelect(pendingElicitation.id, value)}
+                  onSelect={(value, label) => handleElicitationSelect(pendingElicitation.id, value, label)}
                   onFreeform={(text) => handleElicitationFreeform(pendingElicitation.id, text)}
                   onSkip={() => handleElicitationSkip(pendingElicitation.id)}
                   className="rounded-3xl shadow-lg"
